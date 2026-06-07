@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="AttackStyle" format=3 uid="uid://bupk2lvf1ck37"]
+
+[ext_resource type="Script" uid="uid://2kh6ghvao7fa" path="res://script/attack_style.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+style_name = "Brutal Attack"
+unlock_cost = 20
+is_unlocked = false
+animation_name = "brutal_attack"
+hitbox_radius = 40.0
+hitbox_position = Vector2(30, 0)
+combo_start_frames = Array[int]([0, 5, 8])
+combo_end_frames = Array[int]([4, 7, 10])
+combo_damages = Array[int]([10, 15, 20])
+knockback_force_x = Array[int]([100, 200, 500])
+knockback_force_y = Array[int]([0, -50, -250])
+stun_durations = Array[float]([0.2, 0.4, 0.0])

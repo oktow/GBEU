@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://cgwfxu3lx04ax"]
+
+[ext_resource type="Script" uid="uid://b3v207ltq2s8j" path="res://script/music_manager.gd" id="1_lexfc"]
+
+[node name="MusicManager" type="Node" unique_id=1619268861]
+script = ExtResource("1_lexfc")
+
+[node name="BGMPlayer" type="AudioStreamPlayer" parent="." unique_id=1238220541]

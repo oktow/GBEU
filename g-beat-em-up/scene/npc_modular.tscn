@@ -1,0 +1,67 @@
+[gd_scene format=3 uid="uid://bwosx5024up0y"]
+
+[ext_resource type="Script" uid="uid://dr8p0qnpbqgqq" path="res://script/npc_modular.gd" id="1_oxlto"]
+[ext_resource type="Texture2D" uid="uid://lrhcmjfvpsw6" path="res://assets/img/npc/kakek_lanjung_idle-Sheet.png" id="2_10n7u"]
+[ext_resource type="PackedScene" uid="uid://n5tdvewxxutu" path="res://scene/shadow.tscn" id="2_vcm8h"]
+[ext_resource type="Texture2D" uid="uid://e5mx7otik53w" path="res://assets/btnCircle.png" id="3_ywwjo"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ywwjo"]
+atlas = ExtResource("2_10n7u")
+region = Rect2(0, 0, 425, 425)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vcm8h"]
+atlas = ExtResource("2_10n7u")
+region = Rect2(425, 0, 425, 425)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gykhy"]
+atlas = ExtResource("2_10n7u")
+region = Rect2(0, 425, 425, 425)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_adobm"]
+animations = [{
+"frames": [{
+"duration": 2.0,
+"texture": SubResource("AtlasTexture_ywwjo")
+}, {
+"duration": 2.0,
+"texture": SubResource("AtlasTexture_vcm8h")
+}, {
+"duration": 2.0,
+"texture": SubResource("AtlasTexture_gykhy")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_511lb"]
+radius = 61.0
+height = 124.0
+
+[node name="NPC_Modular" type="Area2D" unique_id=1942713858]
+position = Vector2(0, -2)
+collision_mask = 2
+script = ExtResource("1_oxlto")
+
+[node name="Shadow" parent="." unique_id=1589633357 instance=ExtResource("2_vcm8h")]
+scale = Vector2(0.27642447, 0.27642447)
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1138469422]
+position = Vector2(2.524355e-29, -3.5762787e-07)
+scale = Vector2(0.35, 0.35)
+sprite_frames = SubResource("SpriteFrames_adobm")
+animation = &"idle"
+frame_progress = 0.73618656
+offset = Vector2(-2.8571427, -208.57146)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1058921381]
+position = Vector2(0, -44)
+shape = SubResource("CapsuleShape2D_511lb")
+
+[node name="PromptIcon" type="Sprite2D" parent="." unique_id=942202750]
+position = Vector2(0, -95.00001)
+scale = Vector2(0.17238703, 0.17238703)
+texture = ExtResource("3_ywwjo")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="body_exited" from="." to="." method="_on_body_exited"]

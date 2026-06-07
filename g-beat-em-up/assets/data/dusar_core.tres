@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CoreStats" format=3 uid="uid://dyc44s02esl5x"]
+
+[ext_resource type="Script" uid="uid://buk5m7m4lrmm3" path="res://script/core_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+enemy_name = "Dusar"
+health = 250.0
+damage = 8
+speed = 60.0
+radar_radius = 600.0
+attack_cooldown = 2.5
+kill_score_value = 150
+special_energy_value = 50.0

@@ -1,0 +1,187 @@
+[gd_scene format=3 uid="uid://cs2x41a0pdcjg"]
+
+[ext_resource type="Script" uid="uid://b38f0klwrarup" path="res://script/pause_menu.gd" id="1_grdc7"]
+[ext_resource type="Texture2D" uid="uid://cj5eqw2l087kx" path="res://assets/img/ui/gendrapause.png" id="2_cq4tv"]
+[ext_resource type="FontFile" uid="uid://dmuepey3c3aun" path="res://assets/font/Bangers-Regular.ttf" id="4_es2cm"]
+[ext_resource type="Script" uid="uid://2kh6ghvao7fa" path="res://script/attack_style.gd" id="5_et5lo"]
+[ext_resource type="Script" uid="uid://d24djma6i10pl" path="res://script/attack_shop.gd" id="5_grhc7"]
+[ext_resource type="Resource" uid="uid://7xmpmvigur5" path="res://assets/data/normal_attack.tres" id="6_r1gbo"]
+[ext_resource type="Resource" uid="uid://bupk2lvf1ck37" path="res://assets/data/brutal_attack.tres" id="7_71u2q"]
+[ext_resource type="Script" path="res://script/upgrade_shop.gd" id="8_upg"]
+[ext_resource type="Script" path="res://script/equipment_ui.gd" id="9_equip"]
+[ext_resource type="Script" path="res://script/dash_shop.gd" id="10_dash"]
+
+[node name="PauseMenu" type="CanvasLayer"]
+process_mode = 3
+layer = 100
+script = ExtResource("1_grdc7")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -5.0
+offset_right = 6.0
+offset_bottom = 19.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.0923116, 0.38767698, 0.58132356, 0.43529412)
+
+[node name="Button" type="VBoxContainer" parent="."]
+offset_left = 522.0
+offset_top = 84.0
+offset_right = 596.0
+offset_bottom = 312.0
+mouse_filter = 2
+
+[node name="ButtonStats" type="Button" parent="Button"]
+layout_mode = 2
+text = "STATS"
+
+[node name="ButtonShop" type="Button" parent="Button"]
+layout_mode = 2
+text = "SHOP"
+
+[node name="ButtonUpgrade" type="Button" parent="Button"]
+layout_mode = 2
+text = "UPGRADE"
+
+[node name="ButtonEquip" type="Button" parent="Button"]
+layout_mode = 2
+text = "EQUIP"
+
+[node name="ButtonDash" type="Button" parent="Button"]
+layout_mode = 2
+text = "DASH"
+
+[node name="ButtonResume" type="Button" parent="Button"]
+layout_mode = 2
+text = "RESUME"
+
+[node name="ButtonLeave" type="Button" parent="Button"]
+layout_mode = 2
+text = "LEAVE"
+
+[node name="Status" type="BoxContainer" parent="."]
+offset_left = 95.0
+offset_top = 84.0
+offset_right = 517.0
+offset_bottom = 314.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Status"]
+layout_mode = 2
+
+[node name="LabelHP" type="Label" parent="Status/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("4_es2cm")
+theme_override_font_sizes/font_size = 16
+text = "HP : 100 / 100"
+
+[node name="LabelStamina" type="Label" parent="Status/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("4_es2cm")
+theme_override_font_sizes/font_size = 16
+text = "STAMINA : 20 / 20"
+
+[node name="LabelSpecial" type="Label" parent="Status/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("4_es2cm")
+theme_override_font_sizes/font_size = 16
+text = "SPECIAL : 0 / 100"
+
+[node name="LabelEXP" type="Label" parent="Status/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("4_es2cm")
+theme_override_font_sizes/font_size = 16
+text = "EXPERIENCE : 0"
+
+[node name="statname" type="Sprite2D" parent="."]
+position = Vector2(334, 63)
+scale = Vector2(0.7401961, 0.7401961)
+texture = ExtResource("2_cq4tv")
+
+[node name="ShopPanel" type="Control" parent="."]
+visible = false
+offset_left = 67.0
+offset_top = 83.0
+offset_right = 489.0
+offset_bottom = 330.0
+script = ExtResource("5_grhc7")
+attack_list = Array[ExtResource("5_et5lo")]([ExtResource("6_r1gbo"), ExtResource("7_71u2q")])
+
+[node name="ScrollContainer" type="ScrollContainer" parent="ShopPanel"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ShopPanel/ScrollContainer"]
+layout_mode = 2
+
+[node name="UpgradePanel" type="Control" parent="."]
+visible = false
+offset_left = 67.0
+offset_top = 83.0
+offset_right = 489.0
+offset_bottom = 330.0
+script = ExtResource("8_upg")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="UpgradePanel"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UpgradePanel/ScrollContainer"]
+layout_mode = 2
+
+[node name="EquipPanel" type="Control" parent="."]
+visible = false
+offset_left = 67.0
+offset_top = 83.0
+offset_right = 489.0
+offset_bottom = 330.0
+script = ExtResource("9_equip")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="EquipPanel"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="EquipPanel/ScrollContainer"]
+layout_mode = 2
+
+[node name="DashPanel" type="Control" parent="."]
+visible = false
+offset_left = 67.0
+offset_top = 83.0
+offset_right = 489.0
+offset_bottom = 330.0
+script = ExtResource("10_dash")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="DashPanel"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="DashPanel/ScrollContainer"]
+layout_mode = 2
+
+[connection signal="pressed" from="Button/ButtonStats" to="." method="_on_button_stats_pressed"]
+[connection signal="pressed" from="Button/ButtonShop" to="." method="_on_button_shop_pressed"]
+[connection signal="pressed" from="Button/ButtonUpgrade" to="." method="_on_button_upgrade_pressed"]
+[connection signal="pressed" from="Button/ButtonEquip" to="." method="_on_button_equip_pressed"]
+[connection signal="pressed" from="Button/ButtonDash" to="." method="_on_button_dash_pressed"]
+[connection signal="pressed" from="Button/ButtonResume" to="." method="_on_button_resume_pressed"]
+[connection signal="pressed" from="Button/ButtonLeave" to="." method="_on_button_leave_pressed"]

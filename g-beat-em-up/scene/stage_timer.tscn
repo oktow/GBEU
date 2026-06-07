@@ -1,0 +1,32 @@
+[gd_scene format=3 uid="uid://dljdqx5p748x5"]
+
+[ext_resource type="Script" uid="uid://yqshuqrbj1i7" path="res://script/stage_timer.gd" id="1_dqji3"]
+[ext_resource type="FontFile" uid="uid://cr8o48n661ay1" path="res://assets/font/digital-7.ttf" id="2_lnieu"]
+
+[node name="StageTimer" type="CanvasLayer" unique_id=687920466]
+script = ExtResource("1_dqji3")
+
+[node name="Control" type="Control" parent="." unique_id=1151047553]
+layout_mode = 3
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -20.0
+offset_right = 20.0
+offset_bottom = 40.0
+grow_horizontal = 2
+
+[node name="Label" type="Label" parent="Control" unique_id=97550674]
+layout_mode = 0
+offset_right = 80.0
+offset_bottom = 60.0
+theme_override_colors/font_color = Color(0.9920456, 0.9187369, 0.32086813, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.163)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("2_lnieu")
+theme_override_font_sizes/font_size = 40
+text = "00"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Timer" type="Timer" parent="." unique_id=1081632962]

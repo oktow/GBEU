@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="AttackStyle" format=3 uid="uid://7xmpmvigur5"]
+
+[ext_resource type="Script" uid="uid://2kh6ghvao7fa" path="res://script/attack_style.gd" id="1"]
+
+[resource]
+script = ExtResource("1")

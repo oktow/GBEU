@@ -1,0 +1,106 @@
+[gd_scene format=3 uid="uid://dx40xlsy8jjob"]
+
+[ext_resource type="Script" uid="uid://fsaeyw7risfs" path="res://script/stage_003.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://bhuprnsds400c" path="res://scene/hud.tscn" id="2_hud"]
+[ext_resource type="PackedScene" uid="uid://cg7qdppngloh1" path="res://scene/go_indicator.tscn" id="3_go"]
+[ext_resource type="PackedScene" uid="uid://ce40oj0hdbtej" path="res://scene/combo_counter.tscn" id="4_combo"]
+[ext_resource type="PackedScene" uid="uid://dljdqx5p748x5" path="res://scene/stage_timer.tscn" id="5_timer"]
+[ext_resource type="PackedScene" uid="uid://83xvmkng2ewt" path="res://scene/player.tscn" id="6_player"]
+[ext_resource type="Texture2D" uid="uid://dquq8wpyi8vhm" path="res://assets/img/stage/stage_J003.png" id="6_rx8p5"]
+[ext_resource type="PackedScene" uid="uid://c12nud67p130x" path="res://scene/enemy_spawner.tscn" id="7_spawner"]
+[ext_resource type="PackedScene" uid="uid://cg6l1j4wpqcwn" path="res://scene/item_spawner.tscn" id="9_items"]
+[ext_resource type="PackedScene" uid="uid://bipc357lkjmyj" path="res://scene/enemy_dusar.tscn" id="9_rx8p5"]
+[ext_resource type="PackedScene" uid="uid://br16fdou5fqtc" path="res://scene/rock.tscn" id="10_rock"]
+[ext_resource type="PackedScene" uid="uid://bieuvoiij34ex" path="res://scene/pickup_item.tscn" id="11_pickup"]
+[ext_resource type="PackedScene" uid="uid://3mfsqclqwl1c" path="res://scene/mobile_controls.tscn" id="12_mobile"]
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_floor"]
+a = Vector2(-209, 78)
+b = Vector2(437, 81)
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_left"]
+b = Vector2(0, 334)
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_right"]
+b = Vector2(0, 335)
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_top"]
+b = Vector2(644, 0)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_trigger"]
+size = Vector2(54.25, 294)
+
+[node name="Stage003" type="Node2D" unique_id=2063617997]
+script = ExtResource("1_script")
+
+[node name="HUD" parent="." unique_id=69069196 instance=ExtResource("2_hud")]
+
+[node name="GoIndicator" parent="HUD" unique_id=24986040 instance=ExtResource("3_go")]
+
+[node name="ComboCounter" parent="HUD" unique_id=179124752 instance=ExtResource("4_combo")]
+
+[node name="StageTimer" parent="HUD" unique_id=496634524 instance=ExtResource("5_timer")]
+
+[node name="Map" type="Node2D" parent="." unique_id=1285142886]
+
+[node name="Sprite2D" type="Sprite2D" parent="Map" unique_id=2089162082]
+position = Vector2(325.00003, 82.99999)
+scale = Vector2(0.64599615, 0.47201487)
+texture = ExtResource("6_rx8p5")
+
+[node name="Entities" type="Node2D" parent="." unique_id=2024870353]
+y_sort_enabled = true
+
+[node name="Player" parent="Entities" unique_id=918627910 instance=ExtResource("6_player")]
+position = Vector2(163, 265)
+
+[node name="EnemySpawner" parent="Entities" unique_id=544945784 instance=ExtResource("7_spawner")]
+position = Vector2(374, 248)
+enemy_scenes = Array[PackedScene]([ExtResource("9_rx8p5")])
+max_enemies_in_wave = 1
+
+[node name="spawners" type="Node2D" parent="Entities" unique_id=609123810]
+y_sort_enabled = true
+
+[node name="ItemSpawner" parent="Entities/spawners" unique_id=8073533 instance=ExtResource("9_items")]
+y_sort_enabled = true
+position = Vector2(246, 281)
+item_scenes = Array[PackedScene]([ExtResource("10_rock")])
+max_items = 2
+
+[node name="PickupItem" parent="Entities" unique_id=1440640229 instance=ExtResource("11_pickup")]
+position = Vector2(173, 238)
+
+[node name="WorldBoundaries" type="StaticBody2D" parent="." unique_id=1746634396]
+collision_layer = 524288
+
+[node name="Floor_Ground" type="CollisionShape2D" parent="WorldBoundaries" unique_id=2062706439]
+position = Vector2(209, 254)
+shape = SubResource("SegmentShape2D_floor")
+
+[node name="Left_wall" type="CollisionShape2D" parent="WorldBoundaries" unique_id=296187418]
+shape = SubResource("SegmentShape2D_left")
+
+[node name="Right_wall" type="CollisionShape2D" parent="WorldBoundaries" unique_id=1310622478]
+position = Vector2(639, 0)
+shape = SubResource("SegmentShape2D_right")
+
+[node name="Floor_Top" type="CollisionShape2D" parent="WorldBoundaries" unique_id=273833148]
+position = Vector2(-3, 185)
+shape = SubResource("SegmentShape2D_top")
+
+[node name="MobileControls" parent="." unique_id=1072534019 instance=ExtResource("12_mobile")]
+
+[node name="NextStageTrigger" type="Area2D" parent="." unique_id=1088665606]
+position = Vector2(642, 257)
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="NextStageTrigger" unique_id=1716216680]
+position = Vector2(31.875, -43)
+shape = SubResource("RectangleShape2D_trigger")
+
+[node name="SpawnPoint" type="Marker2D" parent="." unique_id=634418444]
+position = Vector2(166, 271)
+
+[connection signal="body_entered" from="NextStageTrigger" to="." method="_on_next_stage_trigger_body_entered"]

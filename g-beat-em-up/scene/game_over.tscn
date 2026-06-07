@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://138ilapewgra"]
+
+[ext_resource type="Texture2D" uid="uid://di1lg4fhach8x" path="res://assets/gameover1.png" id="1_8uq5u"]
+[ext_resource type="Script" uid="uid://vawcyiodxaua" path="res://script/game_over.gd" id="1_mxr41"]
+
+[node name="GameOver" type="CanvasLayer" unique_id=1072775943]
+script = ExtResource("1_mxr41")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=585640415]
+position = Vector2(320.00003, 180)
+scale = Vector2(0.65, 0.65)
+texture = ExtResource("1_8uq5u")

@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://diyf6wkhbpxmi"]
+
+[ext_resource type="Texture2D" uid="uid://di1lg4fhach8x" path="res://assets/gameover1.png" id="1_8uq5u"]
+[ext_resource type="Script" uid="uid://csr7ngmi58r73" path="res://script/game_over_die.gd" id="1_mxr41"]
+
+[node name="GameOverDie" type="CanvasLayer"]
+script = ExtResource("1_mxr41")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(320.00003, 180)
+scale = Vector2(0.65, 0.65)
+texture = ExtResource("1_8uq5u")

@@ -1,0 +1,426 @@
+[gd_scene format=3 uid="uid://2tbf4ms1u8v2"]
+
+[ext_resource type="Script" uid="uid://dhx0q6eorslls" path="res://script/result_screen.gd" id="1_result"]
+[ext_resource type="FontFile" uid="uid://dmuepey3c3aun" path="res://assets/font/Bangers-Regular.ttf" id="2_bangers"]
+[ext_resource type="FontFile" uid="uid://cr8o48n661ay1" path="res://assets/font/digital-7.ttf" id="3_digital"]
+
+[sub_resource type="StyleBoxFlat" id="style_normal"]
+bg_color = Color(0.2, 0.2, 0.25, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="style_pressed"]
+bg_color = Color(0.5, 0.5, 0.6, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="style_hover"]
+bg_color = Color(0.35, 0.35, 0.45, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="style_focus"]
+bg_color = Color(0.15, 0.15, 0.2, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.9, 0.1, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="ResultScreen" type="CanvasLayer" unique_id=1851313746]
+script = ExtResource("1_result")
+
+[node name="Control" type="Control" parent="." unique_id=570281555]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BgRect" type="ColorRect" parent="Control" unique_id=1885891117]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.75)
+
+[node name="TitleLabel" type="Label" parent="Control" unique_id=2032857186]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 5.0
+offset_right = 600.0
+offset_bottom = 45.0
+theme_override_colors/font_color = Color(1, 0.9, 0.1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("2_bangers")
+theme_override_font_sizes/font_size = 28
+text = "SURVIVAL RESULTS"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="WaveName" type="Label" parent="Control" unique_id=11376729]
+layout_mode = 0
+offset_left = 60.0
+offset_top = 53.0
+offset_right = 200.0
+offset_bottom = 75.0
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = ExtResource("2_bangers")
+theme_override_font_sizes/font_size = 16
+text = "WAVE"
+vertical_alignment = 1
+
+[node name="WaveValue" type="Label" parent="Control" unique_id=1358296998]
+layout_mode = 0
+offset_left = 200.0
+offset_top = 50.0
+offset_right = 320.0
+offset_bottom = 78.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("3_digital")
+theme_override_font_sizes/font_size = 22
+text = "0"
+vertical_alignment = 1
+
+[node name="TimeName" type="Label" parent="Control" unique_id=2089803223]
+layout_mode = 0
+offset_left = 60.0
+offset_top = 80.0
+offset_right = 200.0
+offset_bottom = 102.0
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = ExtResource("2_bangers")
+theme_override_font_sizes/font_size = 16
+text = "TIME"
+vertical_alignment = 1
+
+[node name="TimeValue" type="Label" parent="Control" unique_id=976916380]
+layout_mode = 0
+offset_left = 200.0
+offset_top = 77.0
+offset_right = 320.0
+offset_bottom = 105.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("3_digital")
+theme_override_font_sizes/font_size = 22
+text = "00:00"
+vertical_alignment = 1
+
+[node name="KillsName" type="Label" parent="Control" unique_id=814617309]
+layout_mode = 0
+offset_left = 60.0
+offset_top = 107.0
+offset_right = 200.0
+offset_bottom = 129.0
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = ExtResource("2_bangers")
+theme_override_font_sizes/font_size = 16
+text = "KILLS"
+vertical_alignment = 1
+
+[node name="KillsValue" type="Label" parent="Control" unique_id=1843902678]
+layout_mode = 0
+offset_left = 200.0
+offset_top = 104.0
+offset_right = 320.0
+offset_bottom = 132.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("3_digital")
+theme_override_font_sizes/font_size = 22
+text = "0"
+vertical_alignment = 1
+
+[node name="ComboName" type="Label" parent="Control" unique_id=470407669]
+layout_mode = 0
+offset_left = 60.0
+offset_top = 134.0
+offset_right = 200.0
+offset_bottom = 156.0
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = ExtResource("2_bangers")
+theme_override_font_sizes/font_size = 16
+text = "MAX COMBO"
+vertical_alignment = 1
+
+[node name="ComboValue" type="Label" parent="Control" unique_id=1620735949]
+layout_mode = 0
+offset_left = 200.0
+offset_top = 131.0
+offset_right = 320.0
+offset_bottom = 159.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("3_digital")
+theme_override_font_sizes/font_size = 22
+text = "0"
+vertical_alignment = 1
+
+[node name="DamageName" type="Label" parent="Control" unique_id=1723839726]
+layout_mode = 0
+offset_left = 60.0
+offset_top = 161.0
+offset_right = 200.0
+offset_bottom = 183.0
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = ExtResource("2_bangers")
+theme_override_font_sizes/font_size = 16
+text = "DMG TAKEN"
+vertical_alignment = 1
+
+[node name="DamageValue" type="Label" parent="Control" unique_id=136584923]
+layout_mode = 0
+offset_left = 200.0
+offset_top = 158.0
+offset_right = 320.0
+offset_bottom = 186.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("3_digital")
+theme_override_font_sizes/font_size = 22
+text = "0"
+vertical_alignment = 1
+
+[node name="ScoreBreakdownContainer" type="VBoxContainer" parent="Control" unique_id=700368517]
+layout_mode = 0
+offset_left = 300.0
+offset_top = 53.0
+offset_right = 600.0
+offset_bottom = 220.0
+theme_override_constants/separation = 3
+
+[node name="KillLabel" type="Label" parent="Control/ScoreBreakdownContainer" unique_id=1416926034]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = ExtResource("3_digital")
+theme_override_font_sizes/font_size = 12
+text = "Kills:  0"
+vertical_alignment = 1
+
+[node name="WaveLabel" type="Label" parent="Control/ScoreBreakdownContainer" unique_id=721021135]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = ExtResource("3_digital")
+theme_override_font_sizes/font_size = 12
+text = "Wave Bonus:  +0"
+vertical_alignment = 1
+
+[node name="TimeLabel" type="Label" parent="Control/ScoreBreakdownContainer" unique_id=170995976]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = ExtResource("3_digital")
+theme_override_font_sizes/font_size = 12
+text = "Time Bonus:  +0"
+vertical_alignment = 1
+
+[node name="ComboLabel" type="Label" parent="Control/ScoreBreakdownContainer" unique_id=630628282]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = ExtResource("3_digital")
+theme_override_font_sizes/font_size = 12
+text = "Combo Bonus:  +0"
+vertical_alignment = 1
+
+[node name="PenaltyLabel" type="Label" parent="Control/ScoreBreakdownContainer" unique_id=582692715]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = ExtResource("3_digital")
+theme_override_font_sizes/font_size = 12
+text = "Damage Penalty:  -0"
+vertical_alignment = 1
+
+[node name="SeparatorLabel" type="Label" parent="Control/ScoreBreakdownContainer" unique_id=1210543669]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
+theme_override_fonts/font = ExtResource("3_digital")
+theme_override_font_sizes/font_size = 12
+text = "-------------------"
+vertical_alignment = 1
+
+[node name="TotalLabel" type="Label" parent="Control/ScoreBreakdownContainer" unique_id=2084136017]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("3_digital")
+theme_override_font_sizes/font_size = 14
+text = "TOTAL SCORE:  0"
+vertical_alignment = 1
+
+[node name="EnemyContainer" type="VBoxContainer" parent="Control" unique_id=997508868]
+layout_mode = 0
+offset_left = 55.0
+offset_top = 181.0
+offset_right = 310.0
+offset_bottom = 261.0
+theme_override_constants/separation = 4
+
+[node name="BestMomentLabel" type="Label" parent="Control" unique_id=1074519075]
+layout_mode = 0
+offset_left = 55.0
+offset_top = 265.0
+offset_right = 380.0
+offset_bottom = 285.0
+theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = ExtResource("3_digital")
+theme_override_font_sizes/font_size = 12
+vertical_alignment = 1
+
+[node name="GradeRect" type="ColorRect" parent="Control" unique_id=1108482245]
+layout_mode = 0
+offset_left = 200.0
+offset_top = 309.0
+offset_right = 440.0
+offset_bottom = 357.0
+color = Color(0.15, 0.15, 0.2, 1)
+
+[node name="GradeLabel" type="Label" parent="Control/GradeRect" unique_id=1718423469]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 3.0
+offset_right = 216.0
+offset_bottom = 27.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("2_bangers")
+theme_override_font_sizes/font_size = 20
+text = "RANK: -"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="GradeSubLabel" type="Label" parent="Control/GradeRect" unique_id=1348607379]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 25.0
+offset_right = 216.0
+offset_bottom = 45.0
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = ExtResource("2_bangers")
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RankParticles" type="CPUParticles2D" parent="Control/GradeRect" unique_id=289836827]
+position = Vector2(270, 14)
+emitting = false
+amount = 12
+one_shot = true
+direction = Vector2(0, -0.5)
+spread = 180.0
+gravity = Vector2(0, 30)
+initial_velocity_min = 30.0
+initial_velocity_max = 60.0
+scale_amount_min = 0.5
+color = Color(1, 0.85, 0.2, 0.8)
+
+[node name="RetryButton" type="Button" parent="Control" unique_id=2110605156]
+layout_mode = 0
+offset_left = 73.0
+offset_top = 313.0
+offset_right = 193.0
+offset_bottom = 339.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("2_bangers")
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("style_normal")
+theme_override_styles/pressed = SubResource("style_pressed")
+theme_override_styles/hover = SubResource("style_hover")
+theme_override_styles/focus = SubResource("style_focus")
+text = "RETRY"
+
+[node name="NextStageButton" type="Button" parent="Control" unique_id=1916492732]
+layout_mode = 0
+offset_left = 263.0
+offset_top = 288.0
+offset_right = 383.0
+offset_bottom = 314.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("2_bangers")
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("style_normal")
+theme_override_styles/pressed = SubResource("style_pressed")
+theme_override_styles/hover = SubResource("style_hover")
+theme_override_styles/focus = SubResource("style_focus")
+text = "NEXT STAGE"
+
+[node name="ExitButton" type="Button" parent="Control" unique_id=1916492731]
+layout_mode = 0
+offset_left = 445.0
+offset_top = 313.0
+offset_right = 565.0
+offset_bottom = 339.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("2_bangers")
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("style_normal")
+theme_override_styles/pressed = SubResource("style_pressed")
+theme_override_styles/hover = SubResource("style_hover")
+theme_override_styles/focus = SubResource("style_focus")
+text = "EXIT"
+
+[node name="ContinueLabel" type="Label" parent="Control" unique_id=1303389354]
+layout_mode = 0
+offset_left = 170.0
+offset_top = 345.0
+offset_right = 470.0
+offset_bottom = 363.0
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = ExtResource("2_bangers")
+theme_override_font_sizes/font_size = 12
+text = "ATTACK to confirm"
+horizontal_alignment = 1
+vertical_alignment = 1

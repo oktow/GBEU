@@ -1,0 +1,132 @@
+[gd_scene format=3 uid="uid://3mfsqclqwl1c"]
+
+[ext_resource type="Script" uid="uid://cx3xojkfmecdp" path="res://script/mobile_controls.gd" id="1_7dogv"]
+[ext_resource type="Texture2D" uid="uid://pbm4fc5db524" path="res://assets/btnUp.png" id="2_e1jq4"]
+[ext_resource type="Texture2D" uid="uid://dwhtxtf8uxd0o" path="res://assets/btndown.png" id="3_f6ua0"]
+[ext_resource type="Texture2D" uid="uid://w3yb5c1q78g4" path="res://assets/btnleft.png" id="4_dptbn"]
+[ext_resource type="Texture2D" uid="uid://cnenikjl523tx" path="res://assets/btnRight.png" id="5_ej2qu"]
+[ext_resource type="Texture2D" uid="uid://cau50l8nt71h2" path="res://assets/btnSquare.png" id="6_os40v"]
+[ext_resource type="Texture2D" uid="uid://cnqjjl05n37c6" path="res://assets/btnX.png" id="7_3ijmc"]
+[ext_resource type="Texture2D" uid="uid://e5mx7otik53w" path="res://assets/btnCircle.png" id="8_e732i"]
+[ext_resource type="Texture2D" uid="uid://cuqhy52k83nyr" path="res://assets/btnTriangle.png" id="9_h3j4j"]
+[ext_resource type="Texture2D" uid="uid://cv67bxdfajat6" path="res://assets/img/btnpause-.png" id="10_e1jq4"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_m5r4x"]
+size = Vector2(170, 75)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_qyeqr"]
+size = Vector2(170, 75)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ygh2k"]
+size = Vector2(75, 170)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_7tn23"]
+size = Vector2(75, 170)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ocy34"]
+radius = 75.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_kq8du"]
+radius = 75.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_42d1b"]
+radius = 75.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_jcv6d"]
+radius = 75.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_e1jq4"]
+size = Vector2(80, 80)
+
+[node name="MobileControls" type="CanvasLayer" unique_id=1874664377]
+process_mode = 3
+script = ExtResource("1_7dogv")
+
+[node name="Control" type="Control" parent="." unique_id=1158042575]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MovementGroup" type="Node2D" parent="Control" unique_id=2106297237]
+modulate = Color(1, 1, 1, 0.49019608)
+position = Vector2(70, 264)
+
+[node name="BtnUp" type="TouchScreenButton" parent="Control/MovementGroup" unique_id=470714030]
+position = Vector2(-45, -85)
+scale = Vector2(0.7, 0.7)
+texture_normal = ExtResource("2_e1jq4")
+shape = SubResource("RectangleShape2D_m5r4x")
+passby_press = true
+action = "ui_up"
+
+[node name="BtnDown" type="TouchScreenButton" parent="Control/MovementGroup" unique_id=109949605]
+position = Vector2(-46, -8.999996)
+scale = Vector2(0.7, 0.7)
+texture_normal = ExtResource("3_f6ua0")
+shape = SubResource("RectangleShape2D_qyeqr")
+passby_press = true
+action = "ui_down"
+
+[node name="BtnLeft" type="TouchScreenButton" parent="Control/MovementGroup" unique_id=1410289276]
+position = Vector2(-85, -45.999996)
+scale = Vector2(0.7, 0.7)
+texture_normal = ExtResource("4_dptbn")
+shape = SubResource("RectangleShape2D_ygh2k")
+passby_press = true
+action = "ui_left"
+
+[node name="BtnRight" type="TouchScreenButton" parent="Control/MovementGroup" unique_id=46052111]
+position = Vector2(-2.9999995, -44.999996)
+scale = Vector2(0.7, 0.7)
+texture_normal = ExtResource("5_ej2qu")
+shape = SubResource("RectangleShape2D_7tn23")
+passby_press = true
+action = "ui_right"
+
+[node name="ActionGroup" type="Node2D" parent="Control" unique_id=1703714881]
+modulate = Color(1, 1, 1, 0.49019608)
+position = Vector2(565, 266)
+
+[node name="BtnAttack" type="TouchScreenButton" parent="Control/ActionGroup" unique_id=460257597]
+position = Vector2(-67, -28)
+scale = Vector2(0.4, 0.4)
+texture_normal = ExtResource("6_os40v")
+shape = SubResource("CircleShape2D_ocy34")
+action = "attack"
+
+[node name="BtnDash" type="TouchScreenButton" parent="Control/ActionGroup" unique_id=919951843]
+position = Vector2(-23.999939, 12.0000305)
+scale = Vector2(0.4, 0.4)
+texture_normal = ExtResource("7_3ijmc")
+shape = SubResource("CircleShape2D_kq8du")
+action = "jump"
+
+[node name="BtnSpecial" type="TouchScreenButton" parent="Control/ActionGroup" unique_id=1839094766]
+position = Vector2(18.000061, -29)
+scale = Vector2(0.4, 0.4)
+texture_normal = ExtResource("8_e732i")
+shape = SubResource("CircleShape2D_42d1b")
+action = "interact"
+
+[node name="BtnHeavy" type="TouchScreenButton" parent="Control/ActionGroup" unique_id=1889405592]
+process_mode = 3
+z_index = 10
+position = Vector2(-24.999939, -69)
+scale = Vector2(0.4, 0.4)
+texture_normal = ExtResource("9_h3j4j")
+shape = SubResource("CircleShape2D_jcv6d")
+action = "special"
+
+[node name="menu" type="Node2D" parent="Control" unique_id=862642507]
+modulate = Color(1, 1, 1, 0.49803922)
+position = Vector2(571, 0)
+
+[node name="TouchScreenButton" type="TouchScreenButton" parent="Control/menu" unique_id=1624882093]
+position = Vector2(-43.000004, -9)
+scale = Vector2(0.6, 0.6)
+texture_normal = ExtResource("10_e1jq4")
+shape = SubResource("RectangleShape2D_e1jq4")
+action = "pause"

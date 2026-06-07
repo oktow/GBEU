@@ -1,0 +1,206 @@
+[gd_scene format=3 uid="uid://ce40oj0hdbtej"]
+
+[ext_resource type="Script" uid="uid://c30jjcic7l017" path="res://script/combo_counter.gd" id="1_203vo"]
+[ext_resource type="FontFile" uid="uid://dmuepey3c3aun" path="res://assets/font/Bangers-Regular.ttf" id="2_xksju"]
+
+[sub_resource type="Animation" id="Animation_msm17"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Label:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1.5, 1.5)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Label:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [-0.08726646]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Label2:scale")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Label2:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(29, 5)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Label2:rotation")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [-0.14091167]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("Label:position")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(7.0000105, 10.999998)]
+}
+
+[sub_resource type="Animation" id="Animation_8drqt"]
+resource_name = "hit_pop"
+length = 0.15
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Label:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.05, 0.15),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(1.8, 1.8), Vector2(1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Label:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.033333335, 0.05, 0.15),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [0.017453292, -0.08726646, 0.29869097, 0.017453292]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Label2:scale")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.05, 0.15),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(1.5, 1.5), Vector2(1, 1)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Label2:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.05, 0.15),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(18, 6), Vector2(29, 5), Vector2(17, 5)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Label2:rotation")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0.05, 0.15),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [-0.14091167, 0.017453292]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("Label:position")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0.001, 0.05, 0.15),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(7.0000105, 6.999998), Vector2(7.0000105, 10.999998), Vector2(7.0000105, 4.999998)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_gsxe5"]
+_data = {
+&"RESET": SubResource("Animation_msm17"),
+&"hit_pop": SubResource("Animation_8drqt")
+}
+
+[node name="ComboCounter" type="CanvasLayer" unique_id=1747024078]
+script = ExtResource("1_203vo")
+
+[node name="Control" type="Control" parent="." unique_id=743690287]
+layout_mode = 3
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_top = 49.0
+offset_bottom = 49.0
+grow_horizontal = 2
+scale = Vector2(2, 2)
+pivot_offset = Vector2(9, 12)
+
+[node name="Label2" type="Label" parent="Control" unique_id=1763291520]
+layout_mode = 0
+offset_left = 29.0
+offset_top = 5.0
+offset_right = 73.000015
+offset_bottom = 28.0
+rotation = -0.14091167
+pivot_offset = Vector2(22, 8)
+theme_override_fonts/font = ExtResource("2_xksju")
+text = "combo!"
+
+[node name="Label" type="Label" parent="Control" unique_id=394088654]
+layout_mode = 0
+offset_left = 7.0000105
+offset_top = 10.999998
+offset_right = 47.00001
+offset_bottom = 33.999977
+rotation = -0.08726646
+scale = Vector2(1.5, 1.5)
+pivot_offset = Vector2(8.21698, 10.85656)
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("2_xksju")
+text = "12"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Control" unique_id=1971016241]
+libraries/ = SubResource("AnimationLibrary_gsxe5")
+
+[node name="ComboTimer" type="Timer" parent="Control" unique_id=26139025]

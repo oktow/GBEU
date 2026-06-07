@@ -1,0 +1,12 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+script = Resource("res://script/upgrade_data.gd")
+upgrade_id = "speed"
+upgrade_name = "Speed"
+description = "Movement speed"
+stat_type = "speed"
+max_level = 5
+base_cost = 50
+cost_multiplier = 1.5
+value_per_level = 15.0

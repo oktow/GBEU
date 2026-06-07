@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://script/core_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+enemy_name = "Ghost"
+health = 50.0
+damage = 10
+speed = 80.0
+radar_radius = 200.0
+attack_cooldown = 1.5
+knockback_force = 200.0
+stun_duration = 0.4
+kill_score_value = 100
+special_energy_value = 15.0

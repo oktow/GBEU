@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+script = Resource("res://script/dash_type.gd")
+dash_id = "dash_flame"
+dash_name = "Flame Dash"
+description = "Dash with fire that damages enemies"
+cost_exp = 150
+stamina_cost = 8.0
+speed_multiplier = 5.0
+duration = 0.3
+min_stamina_upgrade_level = 2
+effect = "flame"
+damage_on_dash = 15
+is_invincible = true

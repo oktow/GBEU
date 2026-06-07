@@ -1,0 +1,138 @@
+[gd_scene format=3 uid="uid://cwb0b3sxgquar"]
+
+[ext_resource type="PackedScene" uid="uid://bhuprnsds400c" path="res://scene/hud.tscn" id="1_8v8sb"]
+[ext_resource type="Script" uid="uid://caavgk11au1rh" path="res://script/enemy_spawn_entry.gd" id="2_3tnwh"]
+[ext_resource type="PackedScene" uid="uid://83xvmkng2ewt" path="res://scene/player.tscn" id="2_qqfqa"]
+[ext_resource type="PackedScene" uid="uid://byhl4np7f0orf" path="res://scene/enemy.tscn" id="3_kpb1d"]
+[ext_resource type="FontFile" uid="uid://dmuepey3c3aun" path="res://assets/font/Bangers-Regular.ttf" id="4_588bq"]
+[ext_resource type="PackedScene" uid="uid://ce40oj0hdbtej" path="res://scene/combo_counter.tscn" id="4_d51rr"]
+[ext_resource type="PackedScene" uid="uid://bipc357lkjmyj" path="res://scene/enemy_dusar.tscn" id="4_fbgc2"]
+[ext_resource type="FontFile" uid="uid://cr8o48n661ay1" path="res://assets/font/digital-7.ttf" id="5_3tnwh"]
+[ext_resource type="Texture2D" uid="uid://pe805cmolgqb" path="res://assets/img/stage/stage_J001.png" id="5_d51rr"]
+[ext_resource type="PackedScene" uid="uid://3mfsqclqwl1c" path="res://scene/mobile_controls.tscn" id="6_efnoj"]
+[ext_resource type="PackedScene" uid="uid://cg6l1j4wpqcwn" path="res://scene/item_spawner.tscn" id="8_kpcm6"]
+[ext_resource type="PackedScene" uid="uid://br16fdou5fqtc" path="res://scene/rock.tscn" id="9_0rixy"]
+[ext_resource type="PackedScene" uid="uid://bieuvoiij34ex" path="res://scene/pickup_item.tscn" id="11_b3rjl"]
+[ext_resource type="Script" uid="uid://cek6ajmu3dohx" path="res://script/stage_survival.gd" id="12_survival"]
+
+[sub_resource type="Resource" id="Resource_iyge2"]
+script = ExtResource("2_3tnwh")
+scene = ExtResource("3_kpb1d")
+max_concurrent = 1
+metadata/_custom_type_script = "uid://caavgk11au1rh"
+
+[sub_resource type="Resource" id="Resource_3okop"]
+script = ExtResource("2_3tnwh")
+scene = ExtResource("4_fbgc2")
+max_concurrent = 1
+metadata/_custom_type_script = "uid://caavgk11au1rh"
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_qqfqa"]
+a = Vector2(-209, 78)
+b = Vector2(437, 81)
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_d51rr"]
+b = Vector2(0, 334)
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_b3rjl"]
+b = Vector2(0, 335)
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_hcbq1"]
+b = Vector2(644, 0)
+
+[node name="StageSurvival" type="Node2D" unique_id=1625529622]
+script = ExtResource("12_survival")
+enemy_pool = Array[ExtResource("2_3tnwh")]([SubResource("Resource_iyge2"), SubResource("Resource_3okop")])
+
+[node name="HUD" parent="." unique_id=380430347 instance=ExtResource("1_8v8sb")]
+
+[node name="ComboCounter" parent="HUD" unique_id=1499374783 instance=ExtResource("4_d51rr")]
+
+[node name="WaveUI" type="CanvasLayer" parent="." unique_id=517531032]
+
+[node name="Control" type="Control" parent="WaveUI" unique_id=921229757]
+layout_mode = 3
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 10.0
+offset_bottom = 80.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="WaveLabel" type="Label" parent="WaveUI/Control" unique_id=1800361026]
+layout_mode = 0
+offset_left = 119.0
+offset_top = -9.0
+offset_right = 279.0
+offset_bottom = 31.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("4_588bq")
+theme_override_font_sizes/font_size = 20
+text = "Wave 1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="EnemyLabel" type="Label" parent="WaveUI/Control" unique_id=797311955]
+layout_mode = 0
+offset_left = 132.0
+offset_top = 19.0
+offset_right = 292.0
+offset_bottom = 49.0
+theme_override_colors/font_color = Color(1, 0.8, 0.2, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("5_3tnwh")
+theme_override_font_sizes/font_size = 18
+text = "Enemies: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Map" type="Node2D" parent="." unique_id=619516380]
+
+[node name="Sprite2D" type="Sprite2D" parent="Map" unique_id=508153316]
+position = Vector2(319.99997, 185)
+scale = Vector2(0.62499994, 0.34194124)
+texture = ExtResource("5_d51rr")
+
+[node name="Entities" type="Node2D" parent="." unique_id=413586883]
+y_sort_enabled = true
+
+[node name="Player" parent="Entities" unique_id=933767572 instance=ExtResource("2_qqfqa")]
+position = Vector2(163, 265)
+
+[node name="spawners" type="Node2D" parent="Entities" unique_id=596009491]
+y_sort_enabled = true
+
+[node name="ItemSpawner" parent="Entities/spawners" unique_id=1259709525 instance=ExtResource("8_kpcm6")]
+y_sort_enabled = true
+position = Vector2(246, 281)
+item_scenes = Array[PackedScene]([ExtResource("9_0rixy")])
+max_items = 2
+
+[node name="PickupItem" parent="Entities" unique_id=1265082587 instance=ExtResource("11_b3rjl")]
+position = Vector2(173, 238)
+
+[node name="WorldBoundaries" type="StaticBody2D" parent="." unique_id=2119434329]
+collision_layer = 524288
+
+[node name="Floor_Ground" type="CollisionShape2D" parent="WorldBoundaries" unique_id=1408614226]
+position = Vector2(209, 254)
+shape = SubResource("SegmentShape2D_qqfqa")
+
+[node name="Left_wall" type="CollisionShape2D" parent="WorldBoundaries" unique_id=2043127628]
+shape = SubResource("SegmentShape2D_d51rr")
+
+[node name="Right_wall" type="CollisionShape2D" parent="WorldBoundaries" unique_id=1864797922]
+position = Vector2(639, 0)
+shape = SubResource("SegmentShape2D_b3rjl")
+
+[node name="Floor_Top" type="CollisionShape2D" parent="WorldBoundaries" unique_id=1443540849]
+position = Vector2(0, 204)
+shape = SubResource("SegmentShape2D_hcbq1")
+
+[node name="MobileControls" parent="." unique_id=623483856 instance=ExtResource("6_efnoj")]
+
+[node name="SpawnPoint" type="Marker2D" parent="." unique_id=412574368]
+position = Vector2(165, 271)

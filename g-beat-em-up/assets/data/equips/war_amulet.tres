@@ -1,0 +1,21 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+script = Resource("res://script/equipment_data.gd")
+equip_id = "war_amulet"
+equip_name = "War Amulet"
+slot = "amulet"
+description = "An ancient amulet that boosts attack power"
+rarity = "rare"
+bonus_speed = 10.0
+bonus_damage_percent = 0.0
+bonus_damage_flat = 10
+bonus_max_health = 0.0
+bonus_max_stamina = 0.0
+bonus_max_special = 0.0
+bonus_stamina_regen = 0.0
+bonus_special_charge_rate = 0.0
+on_hit_effect = ""
+on_hit_effect_chance = 0.0
+on_hit_effect_value = 0.0
+cost_exp = 150

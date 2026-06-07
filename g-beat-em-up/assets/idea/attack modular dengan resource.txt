@@ -1,0 +1,148 @@
+Ide yang sangat brilian! Mengubah game dari murni Beat 'em Up klasik menjadi memiliki elemen Action-RPG (bisa membeli/upgrade skill menggunakan EXP) akan membuat replayability game kamu naik drastis. Pemain akan punya alasan untuk terus mengulang stage demi mengumpulkan EXP.
+
+Sistem ini 100% bisa dibuat, dan Godot memiliki fitur khusus untuk ini bernama Custom Resource. Intinya, alih-alih "menanam" damage dan nama animasi langsung di dalam script Player, kita akan membuat "Kartu Data" (Resource) yang bisa dicopot-pasang.
+
+Berikut adalah cetak biru langkah demi langkah untuk merombak sistem combat kamu menjadi modular:
+
+Langkah 1: Buat Blueprint Data Serangan (attack_style.gd)
+Kita buat script baru yang tidak menempel pada scene apa pun. Script ini berfungsi sebagai kerangka/format data untuk setiap gaya serangan.
+
+Buat script baru di tab FileSystem bernama attack_style.gd.
+
+Masukkan kode berikut:
+
+GDScript
+extends Resource
+class_name AttackStyle
+
+@export_group("Info Gaya Serangan")
+@export var style_name: String = "Normal Attack"
+@export var unlock_cost: int = 0 # Harga EXP untuk beli
+@export var is_unlocked: bool = true
+
+@export_group("Data Animasi & Hitbox")
+# Nama animasi di dalam SpriteFrames (misal: "attack1" atau "brutal_attack")
+@export var animation_name: String = "attack1"
+@export var hitbox_radius: float = 20.0
+@export var hitbox_position: Vector2 = Vector2(30, 0)
+
+@export_group("Data Combo (Isi 3 Angka)")
+# Frame awal untuk pukulan 1, 2, dan 3
+@export var combo_start_frames: Array[int] = [0, 2, 4]
+# Frame akhir (saat damage masuk) untuk pukulan 1, 2, dan 3
+@export var combo_end_frames: Array[int] = [1, 3, 6]
+# Damage untuk pukulan 1, 2, dan 3
+@export var combo_damages: Array[int] = [5, 5, 10]
+Langkah 2: Buat File .tres (Kartu Datanya)
+Setelah blueprint-nya ada, kita buat "kartu" serangannya langsung di editor.
+
+Di FileSystem, klik kanan -> Create New -> Resource.
+
+Cari dan pilih AttackStyle (yang baru kita buat di langkah 1).
+
+Beri nama normal_attack.tres.
+
+Buka di Inspector, biarkan isinya default (karena itu data serangan kamu saat ini).
+
+Ulangi langkah di atas, buat brutal_attack.tres.
+
+Buka di Inspector, ubah namanya jadi "Brutal Attack".
+
+Set unlock_cost menjadi 500 (misalnya).
+
+Ubah animation_name menjadi "brutal_attack".
+
+Sesuaikan combo_damages menjadi lebih sakit (misal: [15, 15, 30]).
+
+Sesuaikan frame awal dan akhir sesuai animasi barumu.
+
+Langkah 3: Modifikasi player.gd Gendra
+Sekarang kita ubah script Gendra agar membaca data dari kartu (Resource) yang sedang di-equip, bukan dari script mati.
+
+Buka player.gd dan modifikasi bagian-bagian ini:
+
+1. Tambahkan Variabel Baru di Bagian Atas:
+
+GDScript
+@export_group("Combat Style")
+# HINT: Drag file normal_attack.tres ke sini di Inspector!
+@export var current_attack_style: AttackStyle 
+@export var player_exp: int = 0 # Mata uang untuk beli skill
+2. Rombak Fungsi execute_attack():
+
+GDScript
+func execute_attack():
+	combo_timer.stop()
+	MusicManager.play_sfx("hit")
+	
+	# HINT: combo_step nilainya 1, 2, atau 3. 
+	# Karena Array dimulai dari 0, kita kurangi 1.
+	var step_index = combo_step - 1 
+	
+	# Ambil frame dari gaya serangan yang sedang dipakai
+	var start_f = current_attack_style.combo_start_frames[step_index]
+	var end_f = current_attack_style.combo_end_frames[step_index]
+	
+	await play_animation_part(start_f, end_f)
+3. Rombak Fungsi play_animation_part():
+
+GDScript
+func play_animation_part(start_f, end_f):
+	# Sesuaikan hitbox berdasarkan gaya serangan
+	hitbox_collision.position = current_attack_style.hitbox_position
+	if hitbox_collision.shape is CircleShape2D:
+		hitbox_collision.shape.radius = current_attack_style.hitbox_radius
+
+	hitbox_collision.set_deferred("disabled", false)
+	await get_tree().physics_frame
+
+	# HINT: Baca nama animasi dari kartu Resource
+	var anim_name = current_attack_style.animation_name
+	sprite.animation = anim_name
+	sprite.frame = start_f
+	sprite.play(anim_name)
+
+	await frame_reached(end_f, anim_name) # Tambahkan argumen anim_name
+	sprite.stop()
+	sprite.frame = end_f
+
+	apply_hitbox_damage()
+
+	combo_timer.start(0.3) 
+	await get_tree().create_timer(0.11).timeout
+	hitbox_collision.set_deferred("disabled", true)
+	is_attacking = false
+
+	if Input.is_action_pressed("attack") and !is_hurt and !is_dead:
+		start_combo()
+4. Rombak Fungsi apply_hitbox_damage():
+
+GDScript
+func apply_hitbox_damage():
+	if combo_step <= 0: return
+	
+	var step_index = combo_step - 1
+	var current_damage = current_attack_style.combo_damages[step_index]
+	
+	var targets = $FlipGroup/Hitbox.get_overlapping_bodies()
+	for body in targets:
+		if body.is_in_group("Enemies") and body.has_method("take_damage"):
+			body.take_damage(current_damage) # Gunakan damage dari Resource
+			var combo_ui = get_tree().current_scene.get_node_or_null("HUD/ComboCounter")
+			if combo_ui: combo_ui.add_hit()
+5. Sesuaikan Fungsi frame_reached():
+
+GDScript
+func frame_reached(target_frame, anim_name):
+	while sprite.frame < target_frame:
+		# HINT: Cek menggunakan nama animasi dinamis
+		if sprite.animation != anim_name or is_hurt: 
+			break 
+		await get_tree().process_frame
+Cara Mengganti Serangan di Tengah Game
+Dengan sistem di atas, jika Gendra punya uang EXP yang cukup dan kamu membuat UI Toko kecil, mengganti serangannya cukup dengan satu baris kode di script toko tersebut:
+
+GDScript
+# Jika player beli dan equip Brutal Attack
+player.current_attack_style = load("res://path/to/brutal_attack.tres")
+Otomatis seluruh logika damage, animasi, frame, dan hitbox akan berubah seketika tanpa perlu memodifikasi player.gd lagi!

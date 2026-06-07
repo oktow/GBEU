@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="PlayerConfig" format=3 uid="uid://c8loyofagu3v3"]
+
+[ext_resource type="Script" uid="uid://3un54qo6yflo" path="res://script/player_config.gd" id="1"]
+[ext_resource type="Resource" uid="uid://7xmpmvigur5" path="res://assets/data/normal_attack.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+starting_attack = ExtResource("2")

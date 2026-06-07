@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EquipmentData" format=3 uid="uid://cts1lnebidt81"]
+
+[ext_resource type="Script" uid="uid://ckfogx5nls58l" path="res://script/equipment_data.gd" id="1_4vf6y"]
+
+[resource]
+script = ExtResource("1_4vf6y")
+equip_id = "flame_gauntlet"
+equip_name = "Flame Gauntlet"
+slot = "gauntlet"
+description = "Burns enemies on hit"
+rarity = "rare"
+bonus_damage_percent = 10.0
+cost_exp = 10
+on_hit_effect = "burn"
+on_hit_effect_chance = 1.0
+on_hit_effect_value = 5.0

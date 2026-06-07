@@ -1,0 +1,1529 @@
+================================================================================
+                           GBEU - CHANGELOG & RIWAYAT
+================================================================================
+Dokumentasi perubahan kode dan keputusan teknis selama sesi.
+
+================================================================================
+Sesi 1: Attack Modular dengan Custom Resource
+================================================================================
+
+Latar Belakang:
+- Sistem combat player.gd masih hardcode: damage, frame, animasi ditulis
+  langsung di script.
+- Butuh sistem modular agar attack bisa diganti/diupgrade tanpa edit script.
+
+File Baru:
+  script/attack_style.gd
+    - Class AttackStyle extends Resource
+    - Field: style_name, unlock_cost, is_unlocked, animation_name,
+             hitbox_radius, hitbox_position, combo_start_frames,
+             combo_end_frames, combo_damages
+
+  assets/data/normal_attack.tres
+    - Resource default untuk serangan awal
+    - animation_name = "attack1"
+    - combo_damages = [5, 5, 10]
+    - unlock_cost = 0, is_unlocked = true
+
+  assets/data/brutal_attack.tres
+    - Resource upgrade (butuh EXP)
+    - animation_name = "attack1" (sama, karena animasi brutal_attack
+      belum ada di sprite frames)
+    - combo_damages = [15, 15, 30]
+    - unlock_cost = 500, is_unlocked = false
+
+File Dimodifikasi:
+  script/player.gd
+    - Baris 45-47: tambah @export_group("Combat Style") + vars:
+        current_attack_style: AttackStyle
+        player_exp: int
+    - Baris 59: hapus combo_damage dict (digantikan resource)
+    - Baris 406-412: execute_attack() baca combo_start_frames &
+        combo_end_frames dari current_attack_style
+    - Baris 414-439: play_animation_part() set hitbox position/radius
+        & animation_name dari resource (dinamis, bukan hardcode "attack1")
+    - Baris 441-454: apply_hitbox_damage() pakai combo_damages[step_index]
+        dari resource
+    - Baris 456-460: frame_reached() terima param anim_name (dinamis)
+
+Setup:
+  - Buka player.tscn, drag normal_attack.tres ke Inspector >
+    Combat Style > current_attack_style
+
+================================================================================
+Sesi 2: EXP System Modular
+================================================================================
+
+Latar Belakang:
+- Player sudah punya player_exp (dari sesi 1), tapi belum ada sumber EXP.
+- Musuh mati belum memberi EXP.
+
+File Baru:
+  script/exp_reward.gd
+    - Class ExpReward extends Resource
+    - Field: exp_value (int, default 50)
+
+  assets/data/exp_ghost.tres
+    - Ghost: exp_value = 30
+
+  assets/data/exp_dusar.tres
+    - Dusar: exp_value = 50
+
+File Dimodifikasi:
+  script/enemy.gd
+    - Baris 27: tambah @export var exp_reward: ExpReward
+    - Baris 261-262: di die(), panggil player_node.add_exp()
+        dengan exp_reward.exp_value
+
+  script/enemy_dusar.gd
+    - Baris 32: tambah @export var exp_reward: ExpReward
+    - Baris 378-379: di die(), panggil player_node.add_exp()
+        dengan exp_reward.exp_value
+
+  script/player.gd
+    - Baris 6: signal exp_changed(new_exp: int)
+    - Baris 543-545: func add_exp(amount) — increment player_exp
+        + emit signal
+
+Setup:
+  - Buka enemy.tscn, drag exp_ghost.tres ke Inspector > Combat > exp_reward
+  - Buka enemy_dusar.tscn, drag exp_dusar.tres ke Inspector > Combat > exp_reward
+
+================================================================================
+Sesi 3: Stat Player di Pause Menu
+================================================================================
+
+File Dimodifikasi:
+  scene/pause_menu.tscn
+    - Baris 5: tambah ext_resource untuk Bangers-Regular.ttf
+    - Baris 57-83: 4 Label nodes (HP, STM, SPC, EXP) di dalam Status
+      VBoxContainer, font Bangers, size 16, warna putih
+
+  script/pause_menu.gd
+    - Baris 6-9: @onready var untuk keempat label
+    - Baris 22-28: refresh_stats() — cari player via group "Player"
+        (tiap kali dipanggil, bukan sekali di _ready)
+    - Baris 39-40: panggil refresh_stats() tiap pause dibuka
+
+Fix (setelah review):
+  - Awalnya player dicari di _ready() — tapi PauseMenu adalah autoload
+    yang jalan sebelum Player ada, jadi player = null.
+  - Solusi: cari player setiap kali refresh_stats() dipanggil.
+
+================================================================================
+Sesi 4: Attack Shop di Pause Menu
+================================================================================
+
+File Baru:
+  script/attack_shop.gd
+    - Class AttackShop extends Control
+    - @export var attack_list: Array[AttackStyle] — isi .tres di Inspector
+    - build_shop_list(): generate UI dinamis (row per attack)
+    - Setiap row: nama attack + status (BUY/EQUIP/EQUIPPED/LOCKED)
+    - _on_buy(): cek EXP, kurangi, unlock, auto-equip
+    - _on_equip(): set current_attack_style
+
+File Dimodifikasi:
+  scene/pause_menu.tscn
+    - Baris 6: ext_resource untuk attack_shop.gd
+    - Baris 45-49: ButtonShop baru di panel kanan (antara Resume & Leave)
+    - Baris 90-106: ShopPanel (Control) sebagai child root, berisi
+        ScrollContainer > VBoxContainer
+    - Baris 110: signal ButtonShop.pressed -> _on_button_shop_pressed
+
+  script/pause_menu.gd
+    - Baris 11-13: @onready stats_panel, shop_panel, shop_btn
+    - Baris 15: var is_shop_mode: bool
+    - Baris 45-50: toggle_pause() reset ke stats view + refresh shop
+    - Baris 59-77: show_stats_view(), show_shop_view(),
+        _on_button_shop_pressed() — toggle antar mode
+
+Flow:
+  1. Pencet ESC/P → pause menu muncul (tampilan stats default)
+  2. Pencet SHOP → ganti ke tampilan shop (list attack)
+  3. Setiap attack punya tombol: BUY (hijau), EQUIP, atau label EQUIPPED
+  4. BUY → EXP terpotong, attack kebuka, auto-equip
+  5. Pencet STATS → balik ke tampilan stats
+
+Setup:
+  - Buka pause_menu.tscn, pilih ShopPanel node
+  - Inspector > attack_list: size=2
+    - Element 0: assets/data/normal_attack.tres
+    - Element 1: assets/data/brutal_attack.tres
+
+================================================================================
+Struktur File Project (relevan)
+================================================================================
+
+g-beat-em-up/
+  script/
+            player.gd              # Player utama
+    core_stats.gd         # Resource: stat enemy terpusat
+    patrol_data.gd         # Resource: konfigurasi patrol
+    projectile_data.gd     # Resource: konfigurasi ranged attack
+    teleport_data.gd       # Resource: konfigurasi teleport
+    player_config.gd       # Resource: konfigurasi player
+    enemy_hud.gd           # Floating health bar enemy
+    dusar_projectile.gd    # Behavior projectile Dusar
+    enemy.gd               # Enemy base (Ghost)
+    enemy_dusar.gd         # Enemy Dusar (ranged)
+    pause_menu.gd          # Pause menu logic
+    attack_style.gd        # Resource: data serangan
+    exp_reward.gd          # Resource: data EXP
+    attack_shop.gd         # Shop UI logic
+    survival_stats.gd      # Autoload statistik
+    hud.gd                 # HUD overlay
+  assets/
+    data/
+      normal_attack.tres   # Attack: normal
+      brutal_attack.tres   # Attack: brutal
+      exp_ghost.tres       # EXP reward ghost
+      exp_dusar.tres       # EXP reward dusar
+      ghost_core.tres      # CoreStats ghost
+      ghost_patrol.tres    # PatrolData ghost
+      dusar_core.tres      # CoreStats dusar
+      dusar_projectile.tres # ProjectileData dusar
+      dusar_teleport.tres  # TeleportData dusar
+      gendra_config.tres   # PlayerConfig Gendra
+    font/
+      Bangers-Regular.ttf  # Font untuk UI
+      digital-7.ttf        # Font alternatif
+  scene/
+    player.tscn            # Player scene
+    enemy.tscn             # Enemy scene
+    enemy_dusar.tscn       # Dusar scene
+    pause_menu.tscn        # Pause menu (autoload)
+    hud.tscn               # HUD scene
+    enemy_hud.tscn         # Floating HP bar
+    dusar_projectile.tscn  # Projectile Dusar
+
+================================================================================
+Sesi 5: Modular Enemy System dengan Resource-Driven Configuration
+===============================================================================
+
+Latar Belakang:
+- Enemy (ghost & dusar) masih pakai stat hardcode: health, damage, speed
+  langsung di script.
+- Perlu sistem resource-driven agar tuning game balance bisa dilakukan
+  via Inspector tanpa edit kode.
+- Dusar perlu AI ranged (kiting, projectile burst, teleport) yang
+  konfigurasinya fleksibel.
+- Player juga butuh PlayerConfig terpusat menggantikan hardcode values
+  di player.gd.
+- Enemy butuh floating health bar yang muncul saat kena hit.
+
+File Baru:
+  script/core_stats.gd
+    - Class CoreStats extends Resource
+    - Field: enemy_name, health, damage, speed, radar_radius,
+             attack_cooldown, knockback_force, stun_duration,
+             kill_score_value, special_energy_value
+
+  script/patrol_data.gd
+    - Class PatrolData extends Resource
+    - Field: patrol_range, patrol_speed_mult, stop_distance, jump_force,
+             double_tap_delay
+
+  script/projectile_data.gd
+    - Class ProjectileData extends Resource
+    - Field: scene (PackedScene), speed, shots_per_attack, burst_count,
+             shot_delay, burst_delay, spread_type (RANDOM/FAN/FIXED_GAP),
+             spread_deg, fixed_gap_deg, homing_strength, homing_delay
+
+  script/teleport_data.gd
+    - Class TeleportData extends Resource
+    - Field: telegraph_duration, fade_out_duration, fade_in_duration,
+             post_teleport_delay, min_distance, max_distance,
+             teleport_threshold, screen_margin, teleport_on_y
+
+  script/player_config.gd
+    - Class PlayerConfig extends Resource
+    - Field: speed, max_stamina, jump_force, double_tap_delay,
+             max_health, max_special, knockback_threshold, knockback_force,
+             jumpkick_damage, jumpkick_hitbox_frame, jumpkick_hitbox_duration,
+             jumpkick_hitbox_position, jumpkick_hitbox_radius,
+             jumpkick_lunge_multiplier, combo_window_time,
+             starting_attack: AttackStyle
+
+  script/enemy_hud.gd
+    - Node2D dengan child HealthBar (TextureProgressBar)
+    - show_temporarily(): tampil saat enemy kena hit, auto-hide
+    - Baca core_stats.health untuk max value
+
+  script/dusar_projectile.gd
+    - Behavior projectile homing untuk Dusar
+    - Homing dengan tracking bertahap, pulsing scale, lifetime cleanup
+
+  scene/enemy_hud.tscn
+    - Scene floating health bar (red fill over gray underlay)
+
+  scene/dusar_projectile.tscn
+    - Projectile dengan Sprite2D, HitArea, dua CollisionShape2D
+
+  assets/data/ghost_core.tres
+    - CoreStats ghost: HP 50, damage 10, speed 80, radar_radius 200
+
+  assets/data/ghost_patrol.tres
+    - PatrolData ghost: patrol_range 100, speed_mult 0.5
+
+  assets/data/dusar_core.tres
+    - CoreStats dusar: HP 40, damage 8, speed 60, radar_radius 600
+
+  assets/data/dusar_projectile.tres
+    - ProjectileData dusar: 6 shots, 2 burst, FAN spread 40deg, homing
+
+  assets/data/dusar_teleport.tres
+    - TeleportData dusar: telegraph 0.5s, distance 150-250
+
+  assets/data/gendra_config.tres
+    - PlayerConfig untuk karakter Gendra
+    - starting_attack = normal_attack.tres
+
+File Dimodifikasi:
+  script/player.gd
+    - @export_group("Player Config") + player_config: PlayerConfig
+    - _ready() init health/stamina/attack dari player_config
+    - _process() pakai player_config.max_stamina untuk regen
+    - Jump kick refactor: baca damage, hitbox, lunge dari player_config
+    - Dash: start_dash(), stamina cost 5, trigger hold jump > 0.2s
+    - Pickup/throw: try_pick_up(), try_throw(), animasi walk_carry/idle_carry
+    - Special attack: charge mechanic (hold special), execute_special_attack()
+      dengan 3-wave multi-hit combo
+    - Hurt response: FxManager hit FX, knockback dari player_config,
+      flash_red_effect tween
+    - emit_dust() untuk walk/jump/land particles
+    - heal() dan spawn_damage_text() floating text
+    - _on_hurtbox_area_entered() terima damage dari enemy
+
+  script/enemy.gd (refactor besar)
+    - @export_group("Combat") + core_stats: CoreStats, patrol_data: PatrolData
+    - @export_group("Enemy HUD") + hud_display_duration
+    - Patrol state: start_position, patrol_direction, range boundary detection
+    - Radar cooldown 0.8s cegah flicker enter/exit
+    - _physics_process(): patrol → chase → attack state machine
+    - telegraph_attack(): alert indicator (!) 0.35s sebelum attack
+    - execute_attack() baca damage & cooldown dari core_stats
+    - take_damage(): show enemy_hud, spawn hit FX (FxManager), spawn damage
+      numbers, knockback
+    - die(): register kill (SurvivalStats), disable radar/attackrange,
+      grant special energy + EXP, trigger drops (DropPicker), anim mati, queue_free
+    - Semua stat hardcode diganti dengan resource
+
+  script/enemy_dusar.gd (rewrite total)
+    - @export core_stats, projectile_data, teleport_data: Resource
+    - State machine 6 state: IDLE, KITE, CAST_ATTACK, TELEPORT, HIT, DIE
+    - Kiting: maintain jarak dari player (min_distance - max_distance),
+      clamped ke camera bounds
+    - Projectile burst: konfigurable shots/burst/delay, spread pattern
+      (RANDOM/FAN/FIXED_GAP), homing
+    - Teleport: telegraph → fade out → reposition (camera bound) →
+      fade in → post delay. Flanking position relatif ke player
+    - Alert indicator (!) untuk kedua telegraph phase
+    - Damage/death flow: sama dengan enemy.gd (HUD, FX, knockback, EXP, drops)
+
+  script/hud.gd
+    - Baca max_health/max_stamina/max_special dari
+      player.player_config (tidak hardcode 100)
+
+  scene/enemy.tscn
+    - Tambah node EnemyHUD (instance enemy_hud.tscn)
+    - Inspector: core_stats = ghost_core.tres, patrol_data = ghost_patrol.tres
+
+  scene/enemy_dusar.tscn
+    - Tambah node EnemyHUD (instance enemy_hud.tscn)
+    - Tambah ProjectileSpawnPoint (Marker2D) di FlipGroup (pos 80, -50)
+    - Inspector: projectile_data = dusar_projectile.tres,
+      teleport_data = dusar_teleport.tres
+
+  scene/player.tscn
+    - Inspector: player_config = gendra_config.tres
+    - Animasi sprite baru: jump_kick, charging_special, walk_carry,
+      idle_carry, special1
+
+Arsitektur:
+  Semua data game dipisah dari script ke Godot Resources:
+    CoreStats     → stat dasar enemy
+    PatrolData    → movement patrol melee enemy
+    ProjectileData  → ranged attack config
+    TeleportData  → teleport behavior config
+    PlayerConfig  → semua tuning parameter player
+
+  Pattern yang dipakai:
+    - @export_group() untuk Inspector rapi
+    - @export_range(min, max, step) + tooltip Bahasa Indonesia (px/dtk, dtk)
+    - Resource file di assets/data/ dengan prefix snake_case
+    - Enemy AI: state machine (enum untuk Dusar, boolean flag untuk Ghost)
+    - HUD auto-hide dengan display_duration configurable
+    - Radar cooldown cegah target flickering
+    - Camera-bounded movement untuk kiting & teleport
+    - die() flow terstandarisasi: register kill → disable → reward → drops → anim → free
+
+================================================================================
+Sesi 6: Brutal Attack Config & Player State Persistence Antar Stage
+===============================================================================
+
+Latar Belakang:
+- brutal_attack.tres masih pakai animation_name default "attack1" padahal
+  animasi "brutal_attack" sudah ada di SpriteFrames (11 frame).
+- Saat transisi stage_001 → stage_002, player health/stamina/special direset
+  ke max dan attack style balik ke normal_attack.tres karena change_scene 
+  destroy+instance ulang Player node.
+
+File Baru:
+  script/player_state.gd
+    - Autoload singleton untuk persist player state antar scene
+    - save(player): simpan current_health, current_stamina, special_bar,
+      current_attack_style + set should_restore = true
+    - restore(player): terapkan saved state ke player baru
+    - reset(): kosongkan state (dipanggil saat new game / death / retry)
+
+File Dimodifikasi:
+  assets/data/brutal_attack.tres
+    - Baris 8: + animation_name = "brutal_attack"
+    - Baris 13-14: + combo_start_frames = [0, 5, 8],
+      combo_end_frames = [4, 7, 10] (distribusi 5-3-3 frame)
+
+  project.godot
+    - Baris 25: + PlayerState="*res://script/player_state.gd"
+
+  script/player.gd
+    - Baris 52-64: _ready() detek PlayerState.should_restore →
+      restore state + clamp ke max config, atau init default
+    - Baris 510: die() panggil PlayerState.reset()
+
+  script/stage_001.gd
+    - Baris 103: PlayerState.save(body) sebelum change_scene ke stage 2
+
+  script/main_menu.gd
+    - Baris 15: _on_play_pressed() panggil PlayerState.reset()
+    - Baris 25: _on_survival_pressed() panggil PlayerState.reset()
+
+  script/result_screen.gd
+    - Baris 255: _on_retry_pressed() panggil PlayerState.reset()
+    - Baris 266: _on_exit_pressed() panggil PlayerState.reset()
+
+  script/stage_survival.gd
+    - Baris 30: _ready() panggil PlayerState.reset()
+
+Alur Persistence:
+  Stage 1 → player ambil damage, stamina turun, beli Brutal Attack →
+  trigger NextStageTrigger → PlayerState.save(body) → change_scene →
+  stage_002 _ready() → PlayerState.should_restore == true →
+  restore health, stamina, special, attack_style → clamp ke max config →
+  player lanjut dengan state Stage 1.
+
+===============================================================================
+Sesi 7: Player Inventory, Upgrade, Dash, Equipment, Drop, Item & Sistem Pendukung
+================================================================================
+
+Latar Belakang:
+- Belum ada sistem penyimpanan state pemain permanen (antar sesi game).
+- Player cuma punya 1 attack style, belum bisa upgrade stat seperti power/speed.
+- Dash cuma 1 jenis default, stamina cost & parameter hardcode.
+- Belum ada equipment/gear yang bisa dipasang di slot.
+- Musuh mati belum bisa drop item.
+- Belum ada item konsumable (health/stamina/special) atau throwable object.
+- Belum ada combo counter, FX manager, musik manager, atau dialogue system.
+
+================================================================================
+A. Player Inventory & Save System
+================================================================================
+
+File Baru:
+  script/player_inventory.gd
+    - Autoload singleton untuk inventaris pusat
+    - Signal: upgrades_changed, equipment_changed, dash_changed
+    - Fungsi utama: get_upgrade_level(), set_upgrade_level(),
+      add_equipment(), equip_item(), unequip_slot(), has_dash(),
+      add_dash(), set_active_dash(), get_dash_data()
+    - apply_upgrades(player): aplikasi semua bonus stat ke player_config
+    - get_damage_multiplier(): hitung multiplier dari upgrades + equipment %
+    - get_flat_damage(): bonus flat damage dari equipment
+    - get_on_hit_effect(): ambil effect on-hit dari equipment terpasang
+    - save_data() / load_data(): simpan/muat ke user://savegame.tres
+
+  script/save_data.gd
+    - Class SaveData extends Resource
+    - Field: upgrades (Dictionary), owned_equipment (Array[String]),
+      equipped_items (Dictionary), owned_dashes (Array[String]),
+      active_dash (String)
+
+File Dimodifikasi:
+  project.godot
+    - Autoload: PlayerInventory = "*res://script/player_inventory.gd"
+
+  script/player.gd
+    - _reapply_stats(): aplikasi ulang bonus stat dari inventaris
+    - get_calculated_damage(base_dmg): kalikan damage dgn multiplier
+    - try_apply_on_hit_effect(body): poison/life_steal on-hit proc
+    - Terhubung ke signal PlayerInventory.upgrades_changed & equipment_changed
+
+================================================================================
+B. Upgrade System (Stat Permanent)
+================================================================================
+
+File Baru:
+  script/upgrade_data.gd
+    - Class UpgradeData extends Resource
+    - Field: upgrade_id, upgrade_name, description, stat_type,
+      max_level (default 5), base_cost (default 50),
+      cost_multiplier (default 1.5), value_per_level (default 10)
+
+  script/upgrade_shop.gd
+    - Class UpgradeShop extends Control
+    - load_upgrades_from_disk(): auto-load dari assets/data/upgrades/
+    - build_list(): generate UI daftar upgrade + level + cost
+    - _on_buy(): cek EXP, panggil PlayerInventory.set_upgrade_level(), save
+
+  assets/data/upgrades/power_up.tres
+    - power: damage upgrade, base_cost 50, max_level 5
+
+  assets/data/upgrades/speed_up.tres
+    - speed: speed upgrade, base_cost 50, max_level 5
+
+  assets/data/upgrades/stamina_pool.tres
+    - stamina: max stamina upgrade, base_cost 60, max_level 5
+
+  assets/data/upgrades/special_pool.tres
+    - special: max special upgrade, base_cost 80, max_level 5,
+      cost_multiplier 1.6
+
+Setup:
+  - pause_menu.tscn: UpgradePanel node dgn script upgrade_shop.gd
+  - Tombol UPGRADE di pause menu (tab ke-3)
+
+================================================================================
+C. Dash System (Multiple Dash Types)
+================================================================================
+
+File Baru:
+  script/dash_type.gd
+    - Class DashType extends Resource
+    - Field: dash_id, dash_name, description, cost_exp, stamina_cost,
+      speed_multiplier, duration, min_stamina_upgrade_level,
+      effect (String), damage_on_dash, is_invincible
+
+  script/dash_shop.gd
+    - Class DashShop extends Control
+    - load_dashes_from_disk(): auto-load dari assets/data/dashes/
+    - build_list(): UI per dash — BUY/EQUIP/ACTIVE
+    - _on_buy(): cek EXP & min_stamina_upgrade_level, unlock + save
+
+  assets/data/dashes/dash_flame.tres
+    - Flame Dash: cost 150 EXP, stamina 8, speed 5.0x, dur 0.3s,
+      damage 15, min_stamina_lv 2, effect "flame"
+
+  assets/data/dashes/dash_shadow.tres
+    - Shadow Dash: cost 250 EXP, stamina 10, speed 4.0x, dur 0.4s,
+      damage 0, min_stamina_lv 3, effect "shadow"
+
+  assets/data/dashes/dash_explosive.tres
+    - Explosive Dash: cost 400 EXP, stamina 15, speed 6.0x, dur 0.35s,
+      damage 30, min_stamina_lv 5, effect "explosive"
+
+File Dimodifikasi:
+  script/player.gd
+    - start_dash() baca dash_data dari PlayerInventory.get_dash_data()
+      untuk stamina_cost, speed_mult, duration, damage, invincibility
+      yang dinamis dari resource
+    - Fallback: stamina 5, speed 3.5x, dur 0.3s jika data null
+
+Setup:
+  - pause_menu.tscn: DashPanel node dgn script dash_shop.gd
+  - Tombol DASH di pause menu (tab ke-5)
+
+================================================================================
+D. Equipment System (Gear dengan Slot)
+================================================================================
+
+File Baru:
+  script/equipment_data.gd
+    - Class EquipmentData extends Resource
+    - Field: equip_id, equip_name, slot (gauntlet/amulet/ring/armor),
+      description, rarity (common/rare/epic/legendary),
+      bonus_speed, bonus_damage_percent, bonus_damage_flat,
+      bonus_max_health, bonus_max_stamina, bonus_max_special,
+      bonus_stamina_regen, bonus_special_charge_rate,
+      on_hit_effect, on_hit_effect_chance, on_hit_effect_value
+
+  script/equipment_ui.gd
+    - Class EquipmentUI extends Control
+    - 4 slot display: gauntlet, amulet, ring, armor
+    - build_slots_section(): equipment terpasang + UNEQUIP btn
+    - build_inventory_section(): owned equipment + EQUIP btn
+    - Warna rarity: common (abu), rare (biru), epic (ungu), legendary (emas)
+
+  assets/data/equips/root_gauntlet.tres
+    - Root Gauntlet: slot gauntlet, rare, +15% dmg, +20 HP,
+      on-hit poison 20% chance, 5 dmg/tick
+
+  assets/data/equips/war_amulet.tres
+    - War Amulet: slot amulet, rare, +10 speed, +10 flat damage
+
+Setup:
+  - pause_menu.tscn: EquipPanel node dgn script equipment_ui.gd
+  - Tombol EQUIP di pause menu (tab ke-4)
+
+================================================================================
+E. Drop System (Enemy Loot Drops)
+================================================================================
+
+File Baru:
+  script/DropData.gd
+    - Class DropData extends Resource
+    - Field: item_scene (PackedScene), drop_chance (0-100),
+      spawn_properties (Dictionary)
+
+  script/DropPicker.gd
+    - Class DropPicker extends Node2D
+    - @export var possible_drops: Array[DropData]
+    - check_drops(): roll random utk tiap drop entry
+    - spawn_item(drop): instantiate + set properties + add ke Entities node
+
+File Dimodifikasi:
+  script/enemy.gd
+    - die(): panggil $DropPicker.check_drops()
+
+  script/enemy_dusar.gd
+    - die(): panggil $DropPicker.check_drops()
+
+Setup:
+  - Node DropPicker sbg child di enemy.tscn & enemy_dusar.tscn
+
+================================================================================
+F. Pickable Items & Consumables
+================================================================================
+
+File Baru:
+  script/pickable_item.gd
+    - Class PickableItem extends CharacterBody2D
+    - States: IDLE → PICKED_UP → THROWN → BROKEN
+    - pick_up(new_parent): ikut ke FlipGroup tangan player
+    - throw(direction): parabola, damage 50 ke musuh
+    - explode(): queue_free saat collision
+
+  script/pickup_item.gd
+    - Class PickupItem extends Area2D
+    - Enum ItemType: HEALTH, STAMINA, SPECIAL
+    - apply_effect(player): heal / restore stamina / add special
+    - Interact key (C/L) utk pickup
+
+  script/item_spawner.gd
+    - Random spawn item di radius tertentu, 2-5 item configurable
+
+  scene/pickup_item.tscn
+    - Consumable dgn AnimationPlayer (idle_float)
+
+  scene/rock.tscn
+    - Throwable rock (instance pickable_item.gd)
+
+File Dimodifikasi:
+  script/player.gd
+    - try_pick_up() / try_throw(): angkat & lempar benda
+    - Animasi walk_carry / idle_carry saat bawa benda
+
+================================================================================
+G. Combo Counter & FX Manager
+================================================================================
+
+File Baru:
+  script/combo_counter.gd
+    - Class ComboCounter extends CanvasLayer
+    - add_hit(): increment combo, anim pop, reset timer 2s
+    - Auto-hide saat combo reset
+    - Lacak SurvivalStats.max_combo
+
+  scene/combo_counter.tscn
+    - Label combo besar di tengah atas
+
+  script/FxManager.gd
+    - Autoload global FX spawner
+    - spawn_effect(scene, pos, properties): instantiate,
+      set properties, add ke Entities (Y-sort)
+    - Fallback ke current_scene jika Entities tdk ada
+
+  scene/hit_fx.tscn (+ script/hit_fx.gd)
+    - Hit effect AnimatedSprite2D, auto-queue_free
+
+File Dimodifikasi:
+  script/player.gd
+    - apply_hitbox_damage() & execute_jump_kick(): combo_ui.add_hit()
+    - take_damage(): spawn hit_fx via FxManager
+
+================================================================================
+H. Music Manager
+================================================================================
+
+File Baru:
+  script/music_manager.gd
+    - Autoload BGM + SFX player
+    - Playlist: menu, forest, gameover, HatiBaja
+    - SFX: hit, dash, jump, special, hurt
+    - play_bgm(): auto-skip jika lagu sama sedang diputar
+    - play_sfx(): buat AudioStreamPlayer + auto-queue_free
+
+  scene/music_manager.tscn
+
+project.godot:
+    - Autoload: MusicManager
+
+================================================================================
+I. Dialogue & NPC System
+================================================================================
+
+File Baru:
+  script/DialogueDatabase.gd (autoload)
+    - Database dialog terpusat
+    - Entry contoh: "pertemuan_kakek_lanjung" — 3 lines
+    - Support portrait, typewriter, event triggers
+
+  script/dialogue_ui.gd
+    - CanvasLayer dialog UI
+    - Typewriter 0.03s/char, skip on interact
+    - Event trigger di akhir dialog
+
+  script/npc_modular.gd
+    - Modular NPC Area2D
+    - @export dialogue_id, requires_arena_clear
+    - Prompt icon saat player dalam range & arena clear
+    - Interact → DialogManager.start_dialogue()
+
+  scene/dialogue_ui.tscn
+  scene/npc_modular.tscn
+
+project.godot:
+    - Autoload: DialogueDatabase, DialogManager
+
+================================================================================
+J. Stage 3 & Survival Mode Enhancement
+================================================================================
+
+File Baru:
+  script/stage_003.gd
+    - Arena stage 3 dgn enemy waves
+    - NextStageTrigger → main_menu.tscn
+
+  scene/stage_003.tscn
+
+  script/enemy_spawn_entry.gd
+    - Resource: scene, min_wave, weight, use_base_stats
+
+File Dimodifikasi:
+  script/stage_survival.gd
+    - Weighted random enemy selection
+    - Wave scaling: HP +15%/wave, dmg +10%/wave, speed +5%/wave
+    - Wave label + enemy count UI
+    - Game over → result screen
+
+================================================================================
+K. Miscellaneous Scenes & UI Enhancements
+================================================================================
+
+File Baru:
+  script/heal_text.gd / scene/HealText.tscn
+    - Floating "+XHP" rise_and_fade
+
+  script/go_indicator.gd / scene/go_indicator.tscn
+    - "GO!" arrow blinking saat arena clear
+
+  script/shadow.gd / scene/shadow.tscn
+    - Bayangan dinamis player, mengecil saat jump
+
+  script/game_over.gd / scene/game_over.tscn
+    - Layar game over, delay 4s, balik main menu
+
+  script/stage_timer.gd / scene/stage_timer.tscn
+    - Countdown MM:SS, merah saat <30s
+
+  script/mobile_controls.gd / scene/mobile_controls.tscn
+    - Touch controls opacity effect
+
+  script/glitch.gd
+    - Screen glitch: random shake + color shift tiap 3s
+
+  script/splash_screen.gd / scene/splash_screen.tscn
+    - Splash dgn fade, lanjut ke main menu
+
+File Dimodifikasi:
+  scene/pause_menu.tscn
+    - 5 tab: STATS | SHOP | UPGRADE | EQUIP | DASH
+    - Masing-masing panel sendiri
+
+  script/pause_menu.gd
+    - Baris 11-23: @onready upgrade_panel, equip_panel, dash_panel
+      + tab_buttons dictionary
+    - Baris 67-88: show_tab(tab) — visibility toggle + refresh
+    - Tab aktif: font kuning, non-aktif: putih
+    - toggle_pause(): refresh semua panel saat buka
+
+Arsitektur:
+  Semua sistem baru mengikuti pola Resource-Driven:
+    - UpgradeData, DashType, EquipmentData, DropData → Resource
+    - Auto-load dari folder assets/data/ dgn DirAccess
+    - PlayerInventory sbg autoload pusat state & persistence
+    - FxManager & MusicManager sbg autoload service
+    - ComboCounter, DialogueUI sbg CanvasLayer instanced
+
+Pattern Baru:
+    - Save/Load: ResourceSaver/ResourceLoader utk user://savegame.tres
+    - Damage pipeline: base_dmg → get_calculated_damage() → on_hit_effect
+    - Drop system: DropPicker.check_drops() roll-based per enemy
+    - Dash: resource-driven param, fallback jika data null
+    - Equipment: 4 slot, rarity color, on-hit proc chance
+    - Pause menu: 5 tab, refresh on open
+    - Dialogue: autoload database + modular NPC + UI
+    - Audio: MusicManager utk semua BGM & SFX
+
+================================================================================
+Sesi 8: Multi-Slot Save System & Main Menu Restructure
+===============================================================================
+
+Latar Belakang:
+- Dulu cuma 1 save slot (user://savegame.tres), New Game tidak benar-benar
+  reset stat (upgrade/equipment/dash kebawa).
+- Main menu cuma ada Play (start game), Survival, Exit — tidak ada Load Game.
+- PlayerState (HP/stamina/special/attack_style) hanya in-memory, tidak persist
+  ke disk antar sesi game.
+
+File Baru:
+  script/save_selector.gd
+    - Logic UI pemilih 3 slot save
+    - get_save_meta() baca metadata tiap slot (stage, time, kills)
+    - _on_load_pressed(): load data slot → change_scene ke last_stage
+    - _on_delete_pressed(): hapus file save + refresh UI
+    - _stage_display_name() / _format_time() untuk preview
+
+  scene/save_selector.tscn
+    - Scene terpisah untuk pemilih slot
+    - 3 baris slot (SlotContainer > Slot0, Slot1, Slot2)
+    - Tiap baris: NameLabel, InfoLabel, LoadButton, DeleteButton
+    - BackButton kembali ke main menu
+
+File Dimodifikasi:
+  script/save_data.gd
+    - 9 field metadata baru:
+        slot_name (String), timestamp (int), play_time (float),
+        last_stage (String), total_kills (int),
+        health (float), stamina (float), special (float),
+        attack_style_path (String)
+
+  script/player_inventory.gd (refactor besar)
+    - SAVE_PATH diubah dari "user://savegame.tres" → "user://save_{slot}.tres"
+    - SLOT_COUNT = 3, current_slot: int
+    - Fungsi baru: slot_exists(), get_save_meta(), delete_save(), reset_all()
+    - _get_save_path(slot): resolve path per slot
+    - save_data(): simpan juga metadata + PlayerState (HP/stamina/special/last_stage)
+    - load_data(slot_index): restore PlayerState dari save + set should_restore = true
+    - reset_all(): clear upgrades, equipment, dashes, base_cfg
+    - _ready() ganti load_data(0) dari load_data() sebelumnya
+
+  script/player_state.gd
+    - Tambah var last_stage: String
+    - save(player, next_stage) — param next_stage untuk set last_stage
+    - reset() juga reset last_stage ke default stage_001
+
+  script/main_menu.gd (restructure)
+    - 4 button: NewGame, LoadGame, Survival, Exit
+    - _on_new_game_pressed(): current_slot=0, reset_all(), save_data(),
+      PlayerState.reset(), change_scene ke stage_001
+    - _on_load_game_pressed(): change_scene ke save_selector.tscn
+    - _on_survival_pressed(): reset lalu change_scene ke stage_survival
+    - _on_exit_pressed(): quit
+
+  scene/main_menu.tscn
+    - Ganti PlayButton → NewGameButton (tooltip: "Mulai petualangan baru dari awal")
+    - Tambah LoadGameButton (tooltip: "Lanjutkan simpanan terakhir")
+    - SurvivalButton tooltip: "Bertahan hidup selama mungkin"
+    - ExitButton tooltip: "Keluar dari game"
+
+  script/stage_001.gd
+    - PlayerState.save(body) → PlayerState.save(body, "res://scene/stage_002.tscn")
+
+  script/stage_002.gd
+    - PlayerState.save(body) → PlayerState.save(body, "res://scene/stage_003.tscn")
+
+  script/stage_003.gd
+    - PlayerState.save(body) → PlayerState.save(body, "res://scene/main_menu.tscn")
+
+Arsitektur Multi-Slot:
+  Save file: user://save_0.tres, user://save_1.tres, user://save_2.tres
+  Tiap save berisi: upgrades + equipment + dashes + player state + metadata
+  PlayerInventory autoload sebagai pusat manajemen slot + persistence
+
+Alur:
+  Main Menu:
+    New Game  → reset all data slot 0 → stage_001 (fresh start)
+    Load Game → save_selector.tscn → lihat 3 slot → Load/Delete
+    Survival  → reset all data slot 0 → stage_survival
+  Stage Progression:
+    NextStageTrigger → PlayerState.save(player, next_stage) →
+    PlayerInventory.save_data() (tulis semua state + meta ke disk) →
+    change_scene(next_stage)
+  Load Game:
+    Pilih slot → PlayerInventory.load_data(slot) →
+    PlayerState terisi (health, stamina, special, attack_style, last_stage) →
+    change_scene(last_stage) → player.gd._ready() deteksi should_restore →
+    PlayerState.restore(player) → clamp ke max config
+
+Fix:
+  - SurvivalStats.total_kills → SurvivalStats.get_total_kills() (method, bukan property)
+  - Integer division di save_selector.gd: int(sec) / 60 → int(sec / 60)
+
+===============================================================================
+Sesi 9: Perbaikan Sistem Pertarungan (Combat System Fixes)
+===============================================================================
+
+Latar Belakang:
+- Sistem hold-to-combo menggunakan recursive call start_combo() di dalam
+  play_animation_part(), menciptakan coroutine chain yang terus bertambah.
+- frame_reached() bisa exit prematur saat is_hurt tanpa cleanup proper,
+  menyebabkan hitbox tetap aktif dan is_attacking stuck.
+- apply_special_hit() ignore parameter dmg (hardcode 999 = instant kill).
+- Player tidak bisa bergerak/melawan saat hitstun (0.3s frozen total).
+- Tidak ada whiff punishment — kombo naik step walau serangan meleset.
+- Potensi double damage dari enemy via hurtbox_area_entered (Area2D anak).
+
+File Dimodifikasi:
+  script/player.gd
+    - Line 42: hapus unused var special_damage = 25
+    - Line 82-92: hurt handler baru — gerakan 50% speed selama hitstun,
+      move_and_slide() untuk proses knockback (sebelumnya tidak pernah
+      dipanggil karena return early tanpa move_and_slide)
+    - Line 111, 126: + !is_hurt guard di special input
+    - Line 150, 155: + !is_hurt guard di jump kick & ground combo
+    - Line 434-448: start_combo() — combo_step hanya increment jika
+      last_attack_hit == true (whiff punishment). Reset ke 1 jika miss.
+    - Line 458-495: play_animation_part() — 3 titik early exit dengan
+      cleanup proper (is_hurt/is_dead check + disable hitbox)
+    - Line 476: frame_reached() return bool — skip damage jika interupsi
+    - Line 497-517: apply_hitbox_damage() return bool + set last_attack_hit
+    - Line 519-524: frame_reached() return bool, cek is_hurt & is_dead
+    - Line 402: apply_special_hit() — pakai parameter dmg, bukan hardcode 999
+    - Line 668-672: _on_hurtbox_area_entered() — cek parent node bukan area,
+      hindari double damage dari Area2D anak
+
+  script/player_config.gd
+    - Line 26-27: tambah @export_group("Special Attack") +
+      special_attack_damage: int = 50
+
+Detail Perbaikan:
+
+  1. Coroutine Chain & Dual Trigger:
+     - Recursive start_combo() di akhir play_animation_part() dihapus
+     - Hanya _physics_process yang jadi single trigger combo step
+     - Setiap step independent, tidak ada nested coroutine bertumpuk
+
+  2. frame_reached Premature Exit:
+     - Return bool (false jika animasi berubah / is_hurt / is_dead)
+     - play_animation_part() cek return value → cleanup + return
+     - Damage tidak diaplikasikan jika interupsi terjadi
+
+  3. Special Attack Damage:
+     - Parameter _dmg (sebelumnya di-ignore) diubah jadi dmg
+     - apply_special_hit() pakai get_calculated_damage(dmg)
+     - Setiap wave punya damage berbeda (5, 10, 15, 30, 85, dst)
+
+  4. Input Blocked Saat Hurt:
+     - is_hurt dipisah dari early return _physics_process
+     - Blok hurt khusus: izinkan movement 50% speed, call move_and_slide()
+     - Attack/special/jump diblok via !is_hurt guard per-input
+     - Stun duration tetap 0.3s, tapi player bisa gerak selama stun
+
+  5. Whiff Punishment:
+     - Var last_attack_hit: bool — di-set false di awal start_combo()
+     - apply_hitbox_damage() set true jika kena musuh
+     - start_combo() hanya increment combo_step jika last_attack_hit == true
+       DAN combo_timer masih jalan
+
+     6. Double Damage Prevention:
+     - _on_hurtbox_area_entered(area) ambil area.get_parent() sebagai source
+     - Cek parent.is_in_group("Enemies"), bukan area-nya langsung
+
+===============================================================================
+Sesi 10: Hit Reaction per Combo Step (AttackType)
+===============================================================================
+
+Latar Belakang:
+- Semua serangan player menghasilkan reaksi musuh yang sama: animasi "hurt"
+  + knockback dari core_stats. Tidak ada perbedaan antara pukulan ringan
+  (step 1), pukulan sedang (step 2), dan finisher (step 3).
+- Musuh di beat 'em up seharusnya memberikan respons berbeda: stun kecil
+  untuk light, stun sedang + dorong untuk medium, dan terpental/launch
+  untuk knockback/finisher.
+
+Perubahan Arsitektur:
+  1. Player mengirim "paket data serangan" (attack type + knockback force +
+     stun duration) bersama damage ke enemy.
+  2. Enemy menerima data tersebut dan menentukan reaksi berdasarkan
+     AttackType (LIGHT/MEDIUM → enter_hurt, KNOCKBACK → enter_knockback).
+  3. KNOCKBACK mengaktifkan gravitasi pada enemy → enemy terpental ke atas,
+     jatuh ke lantai, masuk state DOWN → bangkit setelah 1 detik.
+
+File Baru:
+  Tidak ada
+
+File Dimodifikasi:
+  script/attack_style.gd
+    - Enum AttackType { LIGHT, MEDIUM, KNOCKBACK }
+    - 4 array baru untuk data reaksi per combo step:
+        combo_types: Array[AttackType] = [LIGHT, MEDIUM, KNOCKBACK]
+        knockback_force_x: Array[int] = [0, 0, 350]
+        knockback_force_y: Array[int] = [0, 0, -200]
+        stun_durations: Array[float] = [0.15, 0.3, 0.0]
+
+  script/player.gd
+    - apply_hitbox_damage(): baca combo_types, knockback_force_x/y,
+      stun_durations dari current_attack_style, kirim ke
+      body.take_damage(final_damage, atype, kb_x, kb_y, stun,
+      flip_group.scale.x)
+    - execute_jump_kick(): panggil take_damage(dmg, MEDIUM, 120, -80,
+      0.3, flip_group.scale.x)
+    - apply_special_hit(): hapus panggilan body.apply_knockback()
+      (sekarang ditangani oleh take_damage), panggil take_damage(...,
+      KNOCKBACK, knock_force, -150, 0.0, flip_group.scale.x)
+
+  script/enemy.gd
+    - Tambah ReactionState enum (NONE, HURT, KNOCKBACK, DOWN) +
+      reaction_state var + GRAVITY = 980.0
+    - _physics_process: match reaction_state — HURT bleed velocity,
+      KNOCKBACK apply gravity + is_on_floor() → enter_down_state(),
+      DOWN diam
+    - take_damage(): signature baru (amount, attack_type, kb_x, kb_y,
+      stun_dur, attacker_facing). LIGHT/MEDIUM → enter_hurt(),
+      KNOCKBACK → enter_knockback()
+    - Hapus apply_knockback() — digantikan oleh enter_hurt()/enter_knockback()
+    - Fungsi baru: enter_hurt(), enter_knockback(), enter_down_state(),
+      spawn_damage_number() (dipulihkan dari hapus tak sengaja)
+    - die(): reset reaction_state = NONE
+
+  script/enemy_dusar.gd
+    - Mirror persis perubahan enemy.gd (ReactionState, gravity,
+      take_damage, enter_hurt/knockback/down, hapus apply_knockback)
+
+  assets/data/brutal_attack.tres
+    - knockback data: combo_types=[0,1,2], force_x=[100,200,500],
+      force_y=[0,-50,-250], stun=[0.2,0.4,0.0]
+
+Alur Gameplay:
+  Combo Step 1 (LIGHT):
+    → enemy.enter_hurt(kb_x=0, stun=0.15s)
+    → stun kecil, tidak ada dorongan (0), animasi "hurt"
+    → musuh bisa bereaksi cepat
+
+  Combo Step 2 (MEDIUM):
+    → enemy.enter_hurt(kb_x=0, stun=0.3s)
+    → stun lebih lama, dorongan 0 (default)
+    → musuh diam lebih lama, kasih waktu player lanjut finisher
+
+  Combo Step 3 (KNOCKBACK):
+    → enemy.enter_knockback(kb_x=350, kb_y=-200)
+    → velocity horizontal 350px/dtk (terpental jauh) + vertikal -200 (ke atas)
+    → gravity bekerja: enemy melayang lalu jatuh
+    → is_on_floor() → enter_down_state() → anim "down" → 1s → bangkit
+    → Musuh benar-benar terpental, tidak bisa aksi selama down state
+
+  Jump Kick (MEDIUM):
+    → Sama seperti step 2, stun 0.3s dengan dorong sedang (120, -80)
+
+  Special Attack (KNOCKBACK):
+    → Semua wave special attack pake KNOCKBACK
+    → Force horizontal sesuai knock_force parameter (300 default)
+    → Force vertikal fixed -150 (terangkat sedang)
+
+Catatan:
+  - Semua animasi fallback: knockback→hurt→idle, down→hurt→idle
+  - Tidak perlu animasi baru untuk mekanik launch + gravity + down state
+  - core_stats.knockback_force dan core_stats.stun_duration tidak dipakai
+    lagi untuk reaksi terhadap serangan player (masih relevan untuk
+    knockback dari sumber lain jika ada)
+
+===============================================================================
+Sesi 11: Fix EXP Persistence, Enemy Chase & Knockback Safety
+===============================================================================
+
+Latar Belakang:
+- Jump kick selalu lunge otomatis ke depan walau tidak tekan arah (tidak wajar
+  di beat 'em up normal).
+- Enemy setelah kena hit (HURT/KNOCKBACK) berhenti mengejar player selamanya
+  karena target_player di-null-kan di enter_hurt()/enter_down_state().
+  Radar body_entered tidak re-fire karena player sudah di dalam area.
+- EXP tidak bertahan antar stage karena PlayerState.save/restore tidak
+  menyertakan player_exp.
+- Save game (disk) juga tidak menyimpan exp → setelah load game EXP = 0.
+- Enemy bisa stuck di KNOCKBACK state selamanya jika tidak ada floor collision
+  di posisi clamp kamera (is_on_floor() never true).
+
+File Dimodifikasi:
+  script/player.gd
+    - execute_jump_kick(): lunge hanya jika pemain menekan kiri/kanan.
+      Jika tidak ada input arah, velocity = Vector2.ZERO (tidak lunge otomatis).
+
+  script/enemy.gd
+    - enter_hurt(): hapus target_player = null setelah stun selesai.
+    - enter_down_state(): hapus target_player = null setelah bangun.
+      Biarkan radar body_exited yang handle nullify saat player benar-benar
+      keluar area.
+    - Tambah _knockback_air_time: float + MAX_KNOCKBACK_AIR_TIME = 1.5
+    - KNOCKBACK state: jika is_on_floor() false, increment air_time.
+      Jika >= 1.5s, paksa enter_down_state().
+    - enter_knockback(): reset _knockback_air_time = 0.0
+
+  script/enemy_dusar.gd
+    - enter_hurt(): hapus target_player = null
+    - enter_down_state(): hapus target_player = null
+    - Tambah _knockback_air_time + MAX_KNOCKBACK_AIR_TIME (sama)
+    - KNOCKBACK state: safety timeout 1.5s
+    - enter_knockback(): reset _knockback_air_time = 0.0
+
+  script/player_state.gd
+    - Tambah var exp: int
+    - save(): simpan player.player_exp ke self.exp
+    - restore(): tulis self.exp ke player.player_exp
+    - reset(): set exp = 0
+
+  script/save_data.gd
+    - Tambah @export var exp: int = 0
+
+  script/player_inventory.gd
+    - save_data(): simpan PlayerState.exp ke data.exp
+    - load_data(): baca data.exp ke PlayerState.exp
+
+Perbaikan:
+  1. Jump Kick Lunge: Sekarang hanya lunge jika player menekan arah.
+     Tidak ada gerakan horizontal otomatis.
+  2. Enemy Chase: Setelah hit reaksi (HURT/KNOCKBACK/DOWN), enemy langsung
+     lanjut mengejar player karena target_player tidak di-null kan manual.
+     Radar body_exited tetap handle nullify saat player keluar area.
+  3. EXP Persistence (Stage): PlayerState.save/restore now includes player_exp.
+     EXP bertahan saat pindah stage_001 → stage_002 → stage_003.
+  4. EXP Persistence (Save/Load): SaveData + PlayerInventory.save/load now
+     include exp. EXP bertahan setelah load game dari disk.
+  5. Knockback Safety: Jika enemy tidak landing di floor dalam 1.5 detik
+     (misalnya knockback di area tanpa floor collision atau clamp kamera),
+     paksa masuk DOWN state lalu recovery.
+
+Alur:
+  Jump Kick:
+    Input.get_axis("ui_left", "ui_right") != 0 →
+      lunge = arah_input * speed * jumpkick_lunge_multiplier
+    Input.get_axis == 0 → velocity = Vector2.ZERO (kick di tempat)
+
+  Enemy Chase:
+    enter_hurt() selesai → reaction_state = NONE → _physics_process
+    lanjut ke state normal → target_player masih set → kejar player
+
+  Knockback Safety:
+    enter_knockback() → _knockback_air_time = 0
+    Setiap frame KNOCKBACK tanpa floor → _knockback_air_time += delta
+    Jika >= 1.5s → enter_down_state() (meski di udara)
+
+===============================================================================
+Sesi 12: Game Over Flow, Enemy Knockback Fix & Dusar Animation Fix
+===============================================================================
+
+Latar Belakang:
+- Belum ada layar game over untuk player death (langsung main menu).
+- Belum ada layar win untuk stage 003 (trigger NextStageTrigger langsung
+  main menu tanpa feedback).
+- Enemy knockback horizontal terlalu lambat (friction 200/dtk) — musuh
+  melayang terlalu jauh.
+- Camera clamping dulu satu fungsi — zeroing velocity mengganggu AI
+  movement normal (kiting).
+- Pause menu aktif meski Player node tidak ada (di main menu).
+- Dusar bisa spawn tanpa batas di survival mode.
+- Dusar tidak menunjukkan animasi attack1 saat CAST_ATTACK (di-override
+  refresh_animation()).
+- Dusar setelah kena hit → state stuck di CAST_ATTACK/TELEPORT → tidak
+  chase player lagi, hanya jalan ke ujung layar.
+
+File Baru:
+  script/game_over_die.gd
+    - 4s delay → change_scene ke result_screen.tscn
+
+  scene/game_over_die.tscn
+    - Splash "Game Over" dengan timer 4s
+
+  script/game_over_win.gd
+    - Panggil SurvivalStats.calculate_score(), set is_win = true
+    - 5s delay → change_scene ke result_screen.tscn
+
+  scene/game_over_win.tscn
+    - Splash "Stage Clear" dengan timer 5s, placeholder gameover1.png
+
+File Dimodifikasi:
+  script/player.gd
+    - die() → change_scene ke game_over_die.tscn (bukan main menu)
+
+  script/stage_survival.gd
+    - game_over() → change_scene ke game_over_die.tscn
+
+  script/stage_timer.gd
+    - trigger_game_over() → change_scene ke game_over_die.tscn
+
+  script/stage_003.gd
+    - _on_next_stage_trigger_body_entered() → change_scene ke
+      game_over_win.tscn (khusus stage final)
+
+  script/survival_stats.gd
+    - Tambah is_win: bool (reset di reset())
+
+  script/result_screen.gd & scene/result_screen.tscn
+    - Tambah NextStageButton + handler _on_next_stage_pressed
+    - Hanya visible saat is_win == true
+
+  script/pause_menu.gd
+    - _input() cek get_tree().get_first_node_in_group("Player")
+      sebelum toggle pause — cegah pause di main menu
+
+  script/enemy_spawn_entry.gd
+    - Tambah @export var max_concurrent: int = 0
+
+  scene/stage_survival.tscn
+    - Set max_concurrent = 2 pada dusar entry
+
+  script/stage_survival.gd
+    - pick_enemy_entry(): skip entry jika living enemy scene_path
+      sudah mencapai max_concurrent
+
+  script/enemy_dusar.gd
+    - Knockback friction: 200 → 1500/dtk (berhenti lebih cepat)
+    - Camera clamping dipecah jadi 2 fungsi:
+        clamp_knockback() — zeroing velocity saat clamp (dipanggil
+          saat KNOCKBACK state)
+        clamp_position() — hanya clamp posisi, tanpa zeroing velocity
+          (dipanggil di akhir _physics_process)
+    - refresh_animation() — gantikan pass di CAST_ATTACK, TELEPORT, HIT
+    - enter_hurt(): hapus kondisional sprite.play("idle"), selalu reset
+    - enter_down_state(): tambah current_state = State.IDLE setelah
+      recovery
+    - take_damage(): reset current_state = State.IDLE saat interrupt
+    - _physics_process guard: tambah or is_attacking — cegah
+      refresh_animation() override animasi attack1 saat CAST_ATTACK
+
+  script/enemy.gd
+    - Knockback friction: 200 → 1500/dtk
+    - Camera clamping dipecah jadi clamp_knockback() + clamp_position()
+    - enter_hurt()/enter_down_state(): sprite.play("idle") setelah recovery
+    - DOWN state: 1.0s → 0.5s
+
+Perbaikan:
+  1. Game Over Flow: Player death → game_over_die.tscn (4s) → result screen.
+     Stage 003 win → game_over_win.tscn (5s) → result screen (dengan
+     Next Stage button). Stage 1-2 tetap pakai exit trigger flow.
+  2. Knockback Friction: 1500/dtk — knockback berhenti dalam ~0.23s
+     (dari 1.75s sebelumnya). Musuh tidak melayang terlalu jauh.
+  3. Camera Clamping Split: clamp_knockback() untuk KNOCKBACK state
+     (zeroing velocity), clamp_position() untuk normal state (tanpa
+     zeroing velocity). AI movement (kiting) tidak terganggu.
+  4. Pause Menu Guard: Hanya aktif saat Player node exist di scene tree.
+     Main menu tidak kena pause toggle.
+  5. Concurrent Enemy Limit: max_concurrent per spawn entry.
+     Survival mode skip spawn jika jumlah living enemy dari scene_path
+     yang sama sudah mencapai batas.
+  6. Dusar Attack Animation: is_attacking di _physics_process guard
+     cegah refresh_animation() override "attack1" jadi "idle" saat
+     CAST_ATTACK.
+  7. Dusar State Reset: current_state di-reset ke IDLE di take_damage()
+     dan enter_down_state() — setelah hit recovery dusar kembali ke
+     state KITE/IDLE normal, tidak stuck di CAST_ATTACK.
+
+Alur:
+  Game Over:
+    Player mati → die() → change_scene("game_over_die") → 4s →
+    change_scene("result_screen") → Retry / Exit
+    Stage 003 selesai → trigger → change_scene("game_over_win") → 5s
+    (calculate_score + is_win=true) → result_screen → Next Stage,
+    Retry, Exit
+
+  Knockback:
+    Player tekan step 3 (KNOCKBACK) → enemy.enter_knockback() →
+    velocity (350 * facing, -200) → gravity 980 turun →
+    friction 1500/dtk horizontal → ~0.23s stop → is_on_floor()
+    → enter_down_state() → 0.5s → bangkit → current_state = IDLE
+    → handle_idle() → KITE (chase player)
+
+===============================================================================
+Sesi 13: Pickable Item Damage & Collision Fixes
+===============================================================================
+
+Latar Belakang:
+- Damage rock di pickable_item.gd masih hardcode 50, tidak menggunakan
+  @export var damage_value (default 20) yang sudah tersedia.
+- Rock bisa explode (queue_free) saat collide dengan player body via
+  move_and_collide di _physics_process karena tidak ada pengecekan player.
+- Pengecekan player di _on_area_2d_body_entered menggunakan body.name
+  (string "Player") bukan group, tidak reliable untuk player child nodes
+  (Hurtbox, MoveCollision) yang juga di group "Player".
+
+File Dimodifikasi:
+  script/pickable_item.gd
+    - Baris 66: body.take_damage(50) → body.take_damage(damage_value)
+      (gunakan @export var, bisa diubah per-instance rock)
+    - Baris 26-30: move_and_collide() sekarang cek collider.is_in_group("Player")
+      sebelum explode() — rock tidak meledak saat collide dengan player body
+    - Baris 78: body.name != "Player" → not body.is_in_group("Player")
+      (pengecekan group lebih reliable daripada node name string)
+
+Detail Perbaikan:
+  1. Damage Modular:
+     - Sebelum: body.take_damage(50) — hardcode
+     - Sesudah: body.take_damage(damage_value) — pakai @export var (default 20)
+     - Nilai bisa diubah via Inspector di tiap instance rock
+
+  2. Player Collision Safety (move_and_collide):
+     - Sebelum: tabrak apa pun → explode() (termasuk player body)
+     - Sesudah: cek collision.get_collider().is_in_group("Player") →
+       skip explode jika player
+     - Masih explode untuk Enemy dan body lain (tembok/lantai)
+
+  3. Player Detection di Area2D (body_entered):
+     - Sebelum: elif body.name != "Player" — hanya cek nama node
+     - Sesudah: elif not body.is_in_group("Player") — cek group
+     - Player child nodes (Hurtbox, MoveCollision) juga di group "Player",
+       jadi ikut dikecualikan
+
+Catatan:
+  - body_entered di Area2D hanya mendeteksi PhysicsBody2D (bukan Area2D),
+    jadi hanya Player CharacterBody2D dan Enemy CharacterBody2D yang
+    terdeteksi. Player child Area2D (Hurtbox, InteractionArea) tidak
+    trigger body_entered.
+  - move_and_collide menggunakan collision_mask = 6 (layer 2=Player +
+    layer 3=Enemy), jadi hanya collide dengan Player dan Enemy.
+  - Tidak ada PhysicsBody2D lain di layer 2+3 selain Player dan Enemy,
+    sehingga kedua perubahan aman untuk sistem lain.
+
+===============================================================================
+Sesi 14: Fire Damage System (DoT) + Equipment Shop
+===============================================================================
+
+Latar Belakang:
+- Belum ada sistem damage-over-time (DoT) di game.
+- Equipment cuma bisa di-equip dari inventory, tidak ada mekanik beli.
+- Ingin efek fire/burning yang modular dari dash flame & equipment.
+
+File Baru:
+  script/firedamage.gd
+    - Class FireDamage extends Node2D
+    - Export: damage_per_tick, tick_interval, duration
+    - start(target, dmg, interval, dur): attach ke enemy sebagai child,
+      mulai particle api + tick timer
+    - _on_tick_timeout(): panggil target.take_damage() dengan skip_react=true
+      (kurangi HP tanpa reaksi HURT/KNOCKBACK)
+    - _on_duration_timeout(): stop particle, queue_free setelah fade out
+
+  scene/firedamage.tscn
+    - Root Node2D (script: firedamage.gd)
+    - GPUParticles2D: efek api procedural (gradient kuning→oranye→merah→fade)
+    - TickTimer (1s): interval damage
+    - DurationTimer (5s): durasi total DoT
+
+  assets/data/equips/flame_gauntlet.tres
+    - Equipment baru: slot gauntlet, rare
+    - on_hit_effect = "burn", chance 0.3, value 5.0 (5 dmg/tick)
+    - bonus_damage_percent = 10%, cost_exp = 300
+
+File Dimodifikasi:
+  script/equipment_data.gd
+    - Baris 19: + @export var cost_exp: int = 100
+      (harga modular per resource)
+
+  assets/data/equips/root_gauntlet.tres
+    - Baris 20: + cost_exp = 200
+
+  assets/data/equips/war_amulet.tres
+    - Baris 20: + cost_exp = 150
+
+  script/equipment_ui.gd
+    - Restructure total: SHOP section + EQUIPPED section
+    - SHOP: load semua equipment dari disk, tampilkan harga EXP
+      - BUY (hijau) jika bisa beli, merah jika kurang EXP
+      - EQUIP / EQUIPPED jika sudah dimiliki
+    - EQUIPPED: slot display + UNEQUIP (seperti sebelumnya)
+    - _on_buy(eq): cek EXP, kurangi, add_equipment + equip_item + save
+
+  script/enemy.gd
+    - Baris 184: take_damage() tambah param skip_react: bool = false
+    - Baris 207-209: jika skip_react true → langsung return setelah
+      kurangi HP + FX + damage number (tanpa reaksi HURT/KNOCKBACK)
+    - Baris 303: + apply_burn(dmg, interval, dur) — instance
+      firedamage.tscn, panggil .start()
+
+  script/enemy_dusar.gd
+    - Mirror persis enemy.gd (take_damage skip_react + apply_burn)
+
+  script/player.gd
+    - start_dash() baris 337: setelah body.take_damage(), cek
+      dash_data.effect == "flame" → body.apply_burn(3, 1.0, 4.0)
+      (Flame Dash: 3 dmg/tick, 1s interval, 4s durasi)
+    - try_apply_on_hit_effect() baris 641: tambah case "burn"
+      panggil body.apply_burn(value, 1.0, 5.0)
+      (Flame Gauntlet: 5 dmg/tick, 1s interval, 5s durasi)
+
+Alur:
+  Flame Dash:
+    Player dash kena enemy → dash damage instan + FireDamage.start()
+    → particle api muncul di enemy → tiap 1 detik tick damage 3
+    → setelah 4s stop + queue_free → total DoT = 12 damage
+
+  Flame Gauntlet (equip):
+    Player combo kena enemy → roll chance 30% → FireDamage.start()
+    → particle api muncul → tiap 1 detik tick damage 5
+    → setelah 5s stop → total DoT = 25 damage
+
+  Beli Equipment:
+    Buka pause → EQUIP tab → SHOP section lihat semua equipment
+    + harga → klik "300 EXP" untuk Flame Gauntlet → EXP terpotong
+    → equipment otomatis ter-equip ke slot gauntlet
+
+Arsitektur:
+  - FireDamage: self-contained DoT handler, attach sebagai child enemy
+  - GPUParticles2D: procedural fire effect tanpa sprite sheet
+  - skip_react: DoT tick tidak trigger stunt/knockback — murni damage
+  - cost_exp per equipment: modular via resource field
+
+===============================================================================
+Sesi 15: Fire Gradient Tuning (Kuning-Oranye) + Particle Texture Fix
+===============================================================================
+
+Latar Belakang:
+- Efek api di firedamage.tscn dominan merah, tidak terlihat seperti api asli.
+- GPUParticles2D color_ramp tidak bisa mewarnai particle dengan benar karena
+  texture fire_particle.png sudah bermasalah (atau berwarna).
+- Api seharusnya memiliki gradien dari kuning terang (inti) → oranye → merah
+  pudar (tepi).
+
+File Dimodifikasi:
+  scene/firedamage.tscn
+    - Gradient_w6dwr: gradient fire utama diubah dari merah dominan ke:
+        - 0.0: kuning terang (1, 1, 0.5)
+        - 0.3: golden (1, 0.85, 0.1)
+        - 0.55: oranye (1, 0.6, 0)
+        - 0.8: oranye gelap (1, 0.35, 0)
+        - 1.0: transparan
+    - Gradient_spark: gradient spark/ember diubah dari putih→kuning→oranye:
+        - 0.0: putih (1, 1, 1)
+        - 0.3: kuning (1, 0.9, 0.3)
+        - 0.65: oranye pudar (1, 0.5, 0)
+        - 1.0: transparan
+
+  assets/img/fx/fire_particle.png
+    - Regenerate dari ukuran tidak diketahui → soft white circle 64×64
+    - Putih solid di tengah → transparan di tepi (radial gradient)
+    - Warna putih diperlukan agar color_ramp di ParticleProcessMaterial
+      bisa mewarnai particle sesuai gradient (mode multiply)
+
+Detail Perbaikan:
+  1. Gradient Fire: Dulu 4 titik warna (0→kuning, 0.25→oranye, 0.5→merah,
+     0.75→merah tua) — sekarang 5 titik dengan dominan kuning→golden→oranye.
+  2. Gradient Spark: Dulu putih→kuning→oranye→merah — sekarang tanpa merah.
+  3. Texture: fire_particle.png dibuat ulang dengan pure Python (zlib+struct)
+     menjadi lingkaran putih 64×64 dengan alpha radial gradient.
+  4. Syarat: texture particle HARUS putih/abu-abu agar color_ramp bekerja.
+
+Arsitektur:
+  - color_ramp di GPUParticles2D bekerja dengan mode multiply secara default
+    → particle putih akan diwarnai sesuai gradient
+  - Jika texture particle sudah berwarna (merah), hasil akhir tetap merah
+    meski gradient diubah jadi kuning
+
+===============================================================================
+Sesi 16: Knockback Modular System (KnockbackData + KnockbackComponent)
+===============================================================================
+
+Latar Belakang:
+- Knockback values berserakan: hardcode di jump kick (120, -80), special attack
+  (300 default, -150 fix), dan array di attack_style.gd.
+- Enemy reaction state (HURT/KNOCKBACK/DOWN) duplikat penuh di enemy.gd dan
+  enemy_dusar.gd dengan logika identik (~60 baris tiap file).
+- Player self-knockback cuma punya 1 nilai X (player_config.knockback_force),
+  Y selalu 0.
+- KnockbackData resource untuk data terpusat, KnockbackComponent untuk
+  behavior reusable.
+
+File Baru:
+  script/knockback_data.gd
+    - Class KnockbackData extends Resource
+    - Field: knockback_force_x (int), knockback_force_y (int),
+      stun_duration (float), attack_type (int: 0=LIGHT, 1=MEDIUM, 2=KNOCKBACK)
+    - Data container modular untuk semua jenis knockback
+
+  script/knockback_component.gd
+    - Class KnockbackComponent extends Node
+    - States: NONE, HURT, KNOCKBACK, DOWN (internal state machine)
+    - Config export: gravity (980), max_knockback_time (1.5s),
+      down_duration (0.5s), knockback_decay (1500)
+    - apply_hurt(kb_x, stun_dur, attacker_facing, character): stun dengan timer
+    - apply_knockback(kb_x, kb_y, attacker_facing, character): launch + gravity
+    - apply_from_data(data, attacker_facing, character): dispatch otomatis
+      berdasarkan data.attack_type
+    - process(delta, character): panggil tiap frame enemy _physics_process
+    - _clamp_to_viewport(): clamp posisi + zeroing velocity saat KNOCKBACK
+    - signal state_changed(old_state, new_state): enemy konek untuk animasi
+    - Timer-based state transition (tanpa await, aman untuk component)
+
+File Dimodifikasi:
+  script/attack_style.gd
+    - Baris 27-33: + get_knockback_data(step_index) -> KnockbackData
+      (bikin KnockbackData dari combo arrays, guard index out-of-bounds)
+
+  script/player_config.gd
+    - Baris 17: + knockback_received: KnockbackData (saat player kena hit)
+    - Baris 18: + jumpkick_knockback: KnockbackData (jump kick, 120,-80)
+    - Baris 19: + special_knockback: KnockbackData (special, 300,-150)
+
+  script/player.gd
+    - apply_hitbox_damage() (baris 521): pake current_attack_style
+      .get_knockback_data(step_index) gantikan manual array access
+    - execute_jump_kick() (baris 287-293): pake player_config
+      .jumpkick_knockback, fallback KnockbackData.new(120, -80, 0.3, MEDIUM)
+    - apply_special_hit() (baris 422-426): pake player_config
+      .special_knockback, fallback knock_force, -150, 0.0, KNOCKBACK
+    - take_damage() (baris 583-587): pake player_config.knockback_received,
+      fallback ke legacy knockback_force untuk X, 0 untuk Y
+
+  script/enemy.gd (refactor reaksi knockback)
+    - Hapus: ReactionState enum, GRAVITY, MAX_KNOCKBACK_AIR_TIME,
+      _knockback_air_time, enter_hurt(), enter_knockback(), clamp_knockback(),
+      enter_down_state() (~50 baris)
+    - Baris 23: + @onready knockback_component = get_node_or_null("KnockbackComponent")
+      (safe, tidak error jika node tidak ada di scene)
+    - Baris 56: _physics_process panggil knockback_component.process(delta, self)
+    - take_damage(): delegasi ke knockback_component.apply_hurt()/apply_knockback()
+    - Baris 196-218: + _on_knockback_state_changed() — mainkan animasi
+      berdasarkan state (hurt/knockback/down/idle)
+    - die(): panggil knockback_component.set_state(NONE)
+
+  script/enemy_dusar.gd
+    - Mirror persis enemy.gd: hapus ~60 baris reaksi duplikat,
+      pake KnockbackComponent dengan node reference safe + signal
+
+Arsitektur:
+  KnockbackData (Resource) → data container
+  KnockbackComponent (Node) → behavior + state machine
+  PlayerConfig (Resource) → knockback_received / jumpkick_knockback /
+    special_knockback (nullable, fallback ke legacy values)
+  AttackStyle (Resource) → get_knockback_data() helper
+
+  Data flow (Player → Enemy):
+    Player attack → create/read KnockbackData → take_damage(..., params) →
+    enemy.knockback_component.apply_hurt()/apply_knockback() →
+    component.process() tiap frame → signal state_changed → enemy
+    play animasi sesuai state
+
+  Data flow (Enemy → Player):
+    Enemy attack → player.take_damage(dmg) →
+    player_config.knockback_received ?? legacy knockback_force →
+    Vector2(x, y) → move_and_slide di hurt handler
+
+Catatan:
+  - KnockbackComponent opsional di scene enemy: get_node_or_null() cegah
+    error jika scene belum diupdate
+  - knockback_data.gd pake int (bukan AttackType enum) untuk hindari
+    circular dependency load order
+  - Semua animasi fallback: knockback→hurt→idle, down→hurt→idle
+  - Kompatibel ke belakang: enemy lama tetap jalan (tanpa KnockbackComponent,
+    knockback diabaikan)
+
+===============================================================================
+End of changelog
+=================================================================================

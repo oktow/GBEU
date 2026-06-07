@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+script = Resource("res://script/dash_type.gd")
+dash_id = "dash_explosive"
+dash_name = "Explosive Dash"
+description = "Powerful dash that stuns nearby enemies"
+cost_exp = 400
+stamina_cost = 15.0
+speed_multiplier = 6.0
+duration = 0.35
+min_stamina_upgrade_level = 5
+effect = "explosive"
+damage_on_dash = 30
+is_invincible = true

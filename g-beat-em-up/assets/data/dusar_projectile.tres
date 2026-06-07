@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ProjectileData" format=3 uid="uid://b8x6t4oisgymx"]
+
+[ext_resource type="Script" uid="uid://4btqwx6fevan" path="res://script/projectile_data.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://dni5et5aeov8r" path="res://scene/dusar_projectile.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+scene = ExtResource("2")
+shots_per_attack = 2
+burst_count = 2
+shot_delay = 0.08
+burst_delay = 0.3
+spread_type = 1
+spread_deg = 40.0

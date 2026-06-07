@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://br16fdou5fqtc"]
+
+[ext_resource type="Script" uid="uid://c5mr4hlegqw6u" path="res://script/pickable_item.gd" id="1_mcbc1"]
+[ext_resource type="Texture2D" uid="uid://bemg6f08gc4se" path="res://assets/img/item/rock1.png" id="2_ri23b"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_t8rkn"]
+radius = 21.095022
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_l5ak7"]
+radius = 25.298222
+
+[node name="PickableItem" type="CharacterBody2D" unique_id=1155087603 groups=["Pickable"]]
+collision_layer = 8
+collision_mask = 6
+floor_max_angle = 0.4712389
+script = ExtResource("1_mcbc1")
+damage_value = 50
+throw_speed = 300.0
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1462704830]
+position = Vector2(0.20000076, 1.2000008)
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("2_ri23b")
+offset = Vector2(0, -63.33333)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=861736227]
+position = Vector2(0.20000076, -17.8)
+shape = SubResource("CircleShape2D_t8rkn")
+
+[node name="Area2D" type="Area2D" parent="." unique_id=1356234469]
+position = Vector2(0.20000076, -17.8)
+collision_layer = 8
+collision_mask = 6
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=634463851]
+shape = SubResource("CircleShape2D_l5ak7")
+debug_color = Color(0.9209659, 0.16174084, 0.5728677, 0.41960785)
+
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]

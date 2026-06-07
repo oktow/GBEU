@@ -1,0 +1,109 @@
+[gd_scene format=3 uid="uid://bhuprnsds400c"]
+
+[ext_resource type="Script" uid="uid://caiqn3bepmf1n" path="res://script/hud.gd" id="1_s3k51"]
+[ext_resource type="Texture2D" uid="uid://cboudta68weqh" path="res://assets/img/HUD/gendrahud.png" id="2_o8u2p"]
+
+[sub_resource type="Gradient" id="Gradient_s3k51"]
+colors = PackedColorArray(0.5211406, 0.5211406, 0.5211405, 1, 0.7162962, 0.7162962, 0.7162962, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_o8u2p"]
+gradient = SubResource("Gradient_s3k51")
+width = 90
+height = 10
+fill_to = Vector2(0, 0)
+
+[sub_resource type="Gradient" id="Gradient_pvgpj"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_nhyt6"]
+gradient = SubResource("Gradient_pvgpj")
+width = 90
+height = 10
+fill_to = Vector2(0, 0)
+
+[sub_resource type="Gradient" id="Gradient_o8u2p"]
+colors = PackedColorArray(0.50534403, 0.5053441, 0.50534403, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_pvgpj"]
+gradient = SubResource("Gradient_o8u2p")
+width = 90
+height = 10
+fill_to = Vector2(0, 0)
+
+[sub_resource type="Gradient" id="Gradient_nhyt6"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_ry2h7"]
+gradient = SubResource("Gradient_nhyt6")
+width = 90
+height = 10
+fill_to = Vector2(0, 0)
+
+[sub_resource type="Gradient" id="Gradient_lky30"]
+colors = PackedColorArray(0.51718444, 0.5171845, 0.51718444, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_qy82l"]
+gradient = SubResource("Gradient_lky30")
+width = 90
+height = 10
+fill_to = Vector2(0, 0)
+
+[sub_resource type="Gradient" id="Gradient_sjh6b"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_xphas"]
+gradient = SubResource("Gradient_sjh6b")
+width = 90
+height = 10
+fill_to = Vector2(0, 0)
+
+[node name="HUD" type="CanvasLayer" unique_id=467357911]
+script = ExtResource("1_s3k51")
+
+[node name="Control" type="Control" parent="." unique_id=2139682014]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 7.0
+offset_top = 6.0
+offset_right = 47.0
+offset_bottom = 46.0
+
+[node name="HealthBar" type="TextureProgressBar" parent="Control" unique_id=479895698]
+layout_mode = 0
+offset_left = 67.0
+offset_top = 6.0
+offset_right = 267.0
+offset_bottom = 46.0
+texture_under = SubResource("GradientTexture2D_o8u2p")
+texture_progress = SubResource("GradientTexture2D_nhyt6")
+tint_progress = Color(1, 0, 0, 1)
+
+[node name="StaminaBar" type="TextureProgressBar" parent="Control" unique_id=1639664638]
+layout_mode = 0
+offset_left = 67.0
+offset_top = 19.0
+offset_right = 267.0
+offset_bottom = 59.0
+texture_under = SubResource("GradientTexture2D_pvgpj")
+texture_progress = SubResource("GradientTexture2D_ry2h7")
+tint_progress = Color(1, 1, 0, 1)
+
+[node name="SpecialBar" type="TextureProgressBar" parent="Control" unique_id=1570157607]
+layout_mode = 0
+offset_left = 67.0
+offset_top = 32.0
+offset_right = 267.0
+offset_bottom = 72.0
+texture_under = SubResource("GradientTexture2D_qy82l")
+texture_progress = SubResource("GradientTexture2D_xphas")
+tint_progress = Color(0.79607844, 0.043137256, 0.84313726, 1)
+
+[node name="CoinLabel" type="Label" parent="Control" unique_id=1641136955]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Sprite2D" type="Sprite2D" parent="Control" unique_id=659579534]
+position = Vector2(82, 23.749996)
+scale = Vector2(1.0256411, 0.6940298)
+texture = ExtResource("2_o8u2p")

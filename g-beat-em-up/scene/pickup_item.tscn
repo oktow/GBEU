@@ -1,0 +1,142 @@
+[gd_scene format=3 uid="uid://bieuvoiij34ex"]
+
+[ext_resource type="Script" uid="uid://dy8kxre7nl2nc" path="res://script/pickup_item.gd" id="1_as327"]
+[ext_resource type="Texture2D" uid="uid://l17af2vfbuh5" path="res://assets/img/item/coconut1.png" id="2_o4n17"]
+[ext_resource type="Texture2D" uid="uid://b6r5myj23lawd" path="res://assets/img/shadow1.png" id="2_tml2l"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_o4n17"]
+radius = 16.0
+
+[sub_resource type="Animation" id="Animation_cixh7"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("item:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0.2, 0.2)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("item:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("shadow:scale")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0.2, 0.2)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("shadow:rotation")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+
+[sub_resource type="Animation" id="Animation_tml2l"]
+resource_name = "idle_float"
+length = 0.5
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("item:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0.2, 0.2), Vector2(0.21, 0.21), Vector2(0.2, 0.2)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("item:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0, 0), Vector2(0, -1.9999999), Vector2(0, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("shadow:scale")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.01, 0.2, 0.51),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0.2, 0.2), Vector2(0.19, 0.19), Vector2(0.2, 0.2)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("shadow:rotation")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(),
+"transitions": PackedFloat32Array(),
+"update": 0,
+"values": []
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_cixh7"]
+_data = {
+&"RESET": SubResource("Animation_cixh7"),
+&"idle_float": SubResource("Animation_tml2l")
+}
+
+[node name="PickupItem" type="Area2D" unique_id=393372307]
+collision_mask = 3
+script = ExtResource("1_as327")
+value = 100
+
+[node name="shadow" type="Sprite2D" parent="." unique_id=1085932256]
+position = Vector2(0, -0.99999905)
+scale = Vector2(0.2, 0.2)
+texture = ExtResource("2_tml2l")
+offset = Vector2(0, -9.999992)
+
+[node name="item" type="Sprite2D" parent="." unique_id=115099252]
+y_sort_enabled = true
+scale = Vector2(0.2, 0.2)
+texture = ExtResource("2_o4n17")
+offset = Vector2(0, -64.99999)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1787415747]
+position = Vector2(0, -13)
+shape = SubResource("CircleShape2D_o4n17")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1571018425]
+libraries/ = SubResource("AnimationLibrary_cixh7")

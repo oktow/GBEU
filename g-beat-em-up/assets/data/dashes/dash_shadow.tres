@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+script = Resource("res://script/dash_type.gd")
+dash_id = "dash_shadow"
+dash_name = "Shadow Dash"
+description = "Dash through enemies while invisible"
+cost_exp = 250
+stamina_cost = 10.0
+speed_multiplier = 4.0
+duration = 0.4
+min_stamina_upgrade_level = 3
+effect = "shadow"
+damage_on_dash = 0
+is_invincible = true
