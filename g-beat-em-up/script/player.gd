@@ -11,7 +11,7 @@ signal exp_changed(new_exp: int)
 @onready var hitbox_collision = $FlipGroup/Hitbox/HitCollision
 @onready var combo_timer = $ComboTimer
 @onready var stamina_timer = $StaminaTimer
-@onready var dust_particles = $FlipGroup/DustParticles
+@onready var dust_particles = $FlipGroup/FootstepFX
 
 # --- 2. Konfigurasi Karakter ---
 @export_group("Player Config")
@@ -40,6 +40,7 @@ var jump_button_hold_time : float = 0.0
 var is_dashing : bool = false
 var combo_step : int = 0
 var last_attack_hit: bool = false
+var _queued_attack: bool = false
 var last_up_tap_time : float = 0.0
 var dash_was_triggered : bool = false
 
@@ -157,6 +158,8 @@ func _physics_process(delta):
 		if !is_attacking:
 			start_combo()
 			return
+		else:
+			_queued_attack = true
 
 	# --- 5. MOVEMENT DASAR ---
 	handle_movement()
@@ -452,8 +455,8 @@ func start_combo():
 	if held_object != null: return 
 	is_attacking = true
 	
-	# Combo hanya naik step jika serangan SEBELUMNYA kena (whiff punishment)
-	if !combo_timer.is_stopped() and last_attack_hit:
+	# Combo naik step selama masih dalam window, tanpa peduli kena/meleset
+	if !combo_timer.is_stopped():
 		combo_step += 1
 	else:
 		combo_step = 1 
@@ -462,6 +465,7 @@ func start_combo():
 		combo_step = 1 
 		
 	last_attack_hit = false
+	_queued_attack = false
 	execute_attack()
 	
 func execute_attack():
@@ -501,15 +505,20 @@ func play_animation_part(start_f, end_f):
 	apply_hitbox_damage()
 
 	combo_timer.start(player_config.combo_window_time)
-	await get_tree().create_timer(0.11).timeout
+	await get_tree().create_timer(0.05).timeout
 
 	if is_hurt or is_dead:
 		hitbox_collision.set_deferred("disabled", true)
 		is_attacking = false
+		_queued_attack = false
 		return
 
 	hitbox_collision.set_deferred("disabled", true)
 	is_attacking = false
+
+	if _queued_attack:
+		_queued_attack = false
+		start_combo()
 
 func apply_hitbox_damage() -> bool:
 	if combo_step <= 0: return false
@@ -664,18 +673,26 @@ func try_apply_on_hit_effect(body):
 
 func _on_hitbox_body_entered(_body):
 	pass
+
+func _on_combo_timer_timeout():
+	_queued_attack = false
+	combo_step = 0
 				
 func emit_dust(type: String):
+	var mat = dust_particles.process_material as ParticleProcessMaterial
 	match type:
 		"walk":
-			dust_particles.amount = 10
+			dust_particles.amount = 5
+			mat.scale_max = 0.35
 			dust_particles.emitting = true
 		"jump":
-			dust_particles.amount = 15 
+			dust_particles.amount = 8
+			mat.scale_max = 0.55
 			dust_particles.restart() 
 			dust_particles.emitting = true
 		"land":
-			dust_particles.amount = 25
+			dust_particles.amount = 14
+			mat.scale_max = 0.7
 			dust_particles.restart() 
 			dust_particles.emitting = true
 		"stop":

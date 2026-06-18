@@ -16,6 +16,7 @@
 [ext_resource type="PackedScene" uid="uid://bieuvoiij34ex" path="res://scene/pickup_item.tscn" id="10_rs6j2"]
 [ext_resource type="FontFile" uid="uid://dmuepey3c3aun" path="res://assets/font/Bangers-Regular.ttf" id="11_xksju"]
 [ext_resource type="PackedScene" uid="uid://dib6ggfmwixdg" path="res://scene/enemy_hud.tscn" id="12_enemy_hud"]
+[ext_resource type="Script" uid="uid://c1cdfbeyydn3t" path="res://script/knockback_component.gd" id="13_knockback"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ulb22"]
 atlas = ExtResource("1_8u16h")
@@ -254,6 +255,9 @@ shape = SubResource("CapsuleShape2D_h08p8")
 
 [node name="Timer" type="Timer" parent="." unique_id=1860558326]
 one_shot = true
+
+[node name="KnockbackComponent" type="Node" parent="."]
+script = ExtResource("13_knockback")
 
 [node name="DropPicker" type="Node2D" parent="." unique_id=1005375895]
 script = ExtResource("8_qhqle")

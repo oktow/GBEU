@@ -6,7 +6,6 @@ extends Control
 @onready var anim_player = $AnimationPlayer
 
 func _ready():
-	MusicManager.play_bgm("HatiBaja") 
 	# Pastikan logo transparan di awal
 	$TextureRect.modulate.a = 0
 	

@@ -16,19 +16,23 @@ func check_drops():
 func spawn_item(drop: DropData):
 	if drop and drop.item_scene:
 		var item = drop.item_scene.instantiate()
-		item.global_position = global_position
+		var drop_pos = global_position
+		
+		var stage = get_tree().current_scene
+		if stage:
+			var top = stage.get("top_limit")
+			var bottom = stage.get("bottom_limit")
+			if top != null and bottom != null:
+				drop_pos.y = clamp(drop_pos.y, top, bottom)
+		
+		var entities_node = get_tree().current_scene.find_child("Entities", true, false)
+		if entities_node:
+			entities_node.add_child(item)
+		else:
+			get_tree().current_scene.add_child(item)
+		
+		item.global_position = drop_pos
+		
 		for key in drop.spawn_properties:
 			if key in item:
 				item.set(key, drop.spawn_properties[key])
-		
-		# CARI NODE ENTITIES AGAR Y-SORT BERFUNGSI
-		# Cari di tree utama atau gunakan group
-		var entities_node = get_tree().current_scene.find_child("Entities", true, false)
-		
-		if entities_node:
-			entities_node.add_child.call_deferred(item)
-			print("Item drop masuk ke Entities: ", item.name)
-		else:
-			# Jika Entities tidak ketemu, taruh di root stage agar tidak ikut terhapus
-			get_tree().current_scene.add_child.call_deferred(item)
-			print("Peringatan: Node Entities tidak ketemu, Y-Sort mungkin gagal.")

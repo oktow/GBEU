@@ -17,6 +17,7 @@
 [ext_resource type="Script" uid="uid://du4a3qex3vfxl" path="res://script/DropData.gd" id="11_sjm5m"]
 [ext_resource type="PackedScene" uid="uid://bieuvoiij34ex" path="res://scene/pickup_item.tscn" id="12_qsk7n"]
 [ext_resource type="PackedScene" uid="uid://dib6ggfmwixdg" path="res://scene/enemy_hud.tscn" id="13_0q7la"]
+[ext_resource type="Script" uid="uid://c1cdfbeyydn3t" path="res://script/knockback_component.gd" id="14_knockback"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5t7ej"]
 atlas = ExtResource("4_c6kwg")
@@ -303,6 +304,9 @@ shape = SubResource("CapsuleShape2D_h08p8")
 
 [node name="Timer" type="Timer" parent="." unique_id=1860558326]
 one_shot = true
+
+[node name="KnockbackComponent" type="Node" parent="."]
+script = ExtResource("14_knockback")
 
 [node name="DropPicker" type="Node2D" parent="." unique_id=1005375895]
 script = ExtResource("10_5ebqm")

@@ -19,6 +19,7 @@
 [ext_resource type="Texture2D" uid="uid://mppyj8ehvr68" path="res://assets/gendra_special001-Sheet.png" id="9_ml7e8"]
 [ext_resource type="Texture2D" uid="uid://bjptxtrt0ikpx" path="res://assets/img/Player/gendra_Jump_kick-Sheet.png" id="13_bup7g"]
 [ext_resource type="Texture2D" uid="uid://bhk766vnfm11f" path="res://assets/gendrawalk_carry-Sheet-Sheet.png" id="14_u7b46"]
+[ext_resource type="PackedScene" uid="uid://c8m5d2w40aqqw" path="res://scene/footstep_fx.tscn" id="15_m4q8p"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_oh5ij"]
 atlas = ExtResource("2_ct4mp")
@@ -536,29 +537,6 @@ radius = 22.36068
 radius = 1.0
 height = 62.0
 
-[sub_resource type="Gradient" id="Gradient_dk1vr"]
-colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
-
-[sub_resource type="GradientTexture1D" id="GradientTexture1D_34jf3"]
-gradient = SubResource("Gradient_dk1vr")
-
-[sub_resource type="Curve" id="Curve_u7b46"]
-_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.9935274, 0), 0.0, 0.0, 0, 0]
-point_count = 2
-
-[sub_resource type="CurveTexture" id="CurveTexture_j4wxg"]
-curve = SubResource("Curve_u7b46")
-
-[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_bup7g"]
-particle_flag_disable_z = true
-direction = Vector3(-1, -0.5, 0)
-initial_velocity_min = 30.0
-initial_velocity_max = 60.0
-gravity = Vector3(0, 0, 0)
-scale_max = 5.0
-scale_curve = SubResource("CurveTexture_j4wxg")
-color_ramp = SubResource("GradientTexture1D_34jf3")
-
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_j4wxg"]
 radius = 20.0
 height = 86.0
@@ -585,6 +563,9 @@ one_shot = true
 [node name="Shadow" parent="FlipGroup" unique_id=1589633357 instance=ExtResource("2_dk1vr")]
 position = Vector2(0, 7.6293945e-06)
 scale = Vector2(0.4, 0.4)
+
+[node name="FootstepFX" parent="FlipGroup" unique_id=1898472345 instance=ExtResource("15_m4q8p")]
+position = Vector2(12.375, 1.3750076)
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="FlipGroup" unique_id=361175058]
 position = Vector2(0.3750002, 3.3750076)
@@ -616,15 +597,6 @@ position = Vector2(-41.375, 18.624992)
 rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_u7b46")
 debug_color = Color(0.49908638, 0.65894645, 0.99578434, 0.41960785)
-
-[node name="DustParticles" type="GPUParticles2D" parent="FlipGroup" unique_id=995550254]
-position = Vector2(12.375, 1.3750076)
-emitting = false
-amount = 15
-amount_ratio = 0.8216
-lifetime = 0.81
-speed_scale = 0.5
-process_material = SubResource("ParticleProcessMaterial_bup7g")
 
 [node name="Hurtbox" type="Area2D" parent="FlipGroup" unique_id=1035817092 groups=["Player"]]
 collision_layer = 2

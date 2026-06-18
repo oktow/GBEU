@@ -30,7 +30,7 @@ class_name PlayerConfig
 @export_range(1, 999, 1) var special_attack_damage: int = 50  # Damage per hit special attack
 
 @export_group("Combo")
-@export_range(0, 2, 0.05) var combo_window_time: float = 0.3  # Window untuk lanjut combo step (dtk)
+@export_range(0, 2, 0.05) var combo_window_time: float = 0.6  # Window untuk lanjut combo step (dtk)
 
 @export_group("Starting Attack")
 @export var starting_attack: AttackStyle  # Attack style awal karakter ini
