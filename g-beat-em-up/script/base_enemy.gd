@@ -1,4 +1,5 @@
 extends CharacterBody2D
+class_name BaseEnemy
 
 @export_group("Core Stats")
 @export var core_stats: Resource
@@ -31,7 +32,7 @@ const RADAR_COOLDOWN_TIME: float = 0.8
 
 
 func _ready():
-	gravity = Vector2.ZERO
+
 	start_position = global_position
 	current_health = core_stats.health if core_stats else 50.0
 	if radar_collision.shape is CircleShape2D:

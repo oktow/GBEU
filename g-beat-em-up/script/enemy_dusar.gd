@@ -1,4 +1,4 @@
-extends "res://script/base_enemy.gd"
+extends preload("res://script/base_enemy.gd")
 
 @export var projectile_data: ProjectileData
 @export var teleport_data: TeleportData

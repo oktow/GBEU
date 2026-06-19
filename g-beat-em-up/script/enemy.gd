@@ -1,4 +1,4 @@
-extends "res://script/base_enemy.gd"
+extends BaseEnemy
 
 @export_group("Patrol Config")
 @export var patrol_data: PatrolData
