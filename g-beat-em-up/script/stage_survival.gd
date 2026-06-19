@@ -44,7 +44,7 @@ func sanitize_pool():
 			enemy_pool.remove_at(i)
 	if enemy_pool.is_empty():
 		var default_entry = EnemySpawnEntry.new()
-		default_entry.scene = preload("res://scene/enemy.tscn")
+		default_entry.scene = ResourcePaths.ENEMY
 		default_entry.min_wave = 1
 		default_entry.weight = 1.0
 		enemy_pool.append(default_entry)
@@ -187,4 +187,4 @@ func game_over():
 	enemy_label.text = "Survived " + str(current_wave) + " waves!"
 	await get_tree().create_timer(2.0).timeout
 	SurvivalStats.calculate_score()
-	get_tree().change_scene_to_file("res://scene/game_over_die.tscn")
+	get_tree().change_scene_to_file(ResourcePaths.GAME_OVER_DIE)

@@ -1,7 +1,7 @@
 extends Control
 
 # Path ke scene utama game kamu
-@export var main_game_scene: String = "res://scene/main_menu.tscn"
+@export var main_game_scene: String = ResourcePaths.MAIN_MENU
 
 @onready var anim_player = $AnimationPlayer
 

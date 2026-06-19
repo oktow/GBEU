@@ -15,14 +15,16 @@ func _ready():
 	build_list()
 
 func load_dashes_from_disk():
-	var dir = DirAccess.open("res://assets/data/dashes/")
+	var dir = DirAccess.open(ResourcePaths.DASHES_DIR)
 	if dir:
 		dir.list_dir_begin()
 		var f = dir.get_next()
 		while f != "":
 			if f.ends_with(".tres"):
-				var res = ResourceLoader.load("res://assets/data/dashes/" + f)
-				if res is DashType:
+				var res = ResourceLoader.load(ResourcePaths.DASHES_DIR + f)
+				if res == null:
+					printerr("DashShop: failed to load: ", ResourcePaths.DASHES_DIR + f)
+				elif res is DashType:
 					dash_list.append(res)
 			f = dir.get_next()
 

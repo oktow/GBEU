@@ -25,7 +25,7 @@ FxManager="*uid://drearlh5o4yaf"
 SurvivalStats="*res://script/survival_stats.gd"
 PlayerState="*res://script/player_state.gd"
 DialogueDatabase="*uid://cy0sq4dwp8x0k"
-DialogManager="*uid://sq3gigtgl3ja"
+DialogManager="*res://script/dialog_manager.gd"
 
 [display]
 
@@ -35,7 +35,7 @@ window/stretch/mode="canvas_items"
 
 [editor_plugins]
 
-enabled=PackedStringArray()
+enabled=PackedStringArray("res://addons/gut/plugin.cfg")
 
 [input]
 

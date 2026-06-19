@@ -9,7 +9,7 @@ func _ready():
 	go_to_result_screen()
 
 func go_to_result_screen():
-	var path = "res://scene/result_screen.tscn"
+	var path = ResourcePaths.RESULT_SCREEN
 	if ResourceLoader.exists(path):
 		get_tree().change_scene_to_file(path)
 	else:

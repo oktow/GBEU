@@ -20,14 +20,16 @@ func refresh():
 	build_slots_section()
 
 func load_equipment_from_disk():
-	var dir = DirAccess.open("res://assets/data/equips/")
+	var dir = DirAccess.open(ResourcePaths.EQUIPS_DIR)
 	if dir:
 		dir.list_dir_begin()
 		var f = dir.get_next()
 		while f != "":
 			if f.ends_with(".tres"):
-				var res = ResourceLoader.load("res://assets/data/equips/" + f)
-				if res is EquipmentData:
+				var res = ResourceLoader.load(ResourcePaths.EQUIPS_DIR + f)
+				if res == null:
+					printerr("EquipmentUI: failed to load: ", ResourcePaths.EQUIPS_DIR + f)
+				elif res is EquipmentData:
 					all_equipment.append(res)
 			f = dir.get_next()
 

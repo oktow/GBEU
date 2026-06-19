@@ -60,7 +60,11 @@ func play_line():
 	
 	# 2. Update Potret Karakter Dinamis
 	if line.has("portrait") and line["portrait"] != "":
-		portrait.texture = load(line["portrait"])
+		var tex = load(line["portrait"])
+		if tex == null:
+			push_error("DialogueUI: failed to load portrait: ", line["portrait"])
+		else:
+			portrait.texture = tex
 		
 	# 3. Mulai Efek Ketik
 	next_icon.hide()

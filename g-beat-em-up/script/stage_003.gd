@@ -80,10 +80,10 @@ func all_enemies_defeated():
 
 func _on_next_stage_trigger_body_entered(body: Node2D) -> void:
 	if body.is_in_group("Player"):
-		PlayerState.save(body, "res://scene/main_menu.tscn")
+		PlayerState.save(body, ResourcePaths.MAIN_MENU)
 		print("SISTEM: Gendra menyelesaikan Stage 3 - VICTORY!")
 
-		var win_path = "res://scene/game_over_win.tscn"
+		var win_path = ResourcePaths.GAME_OVER_WIN
 
 		if ResourceLoader.exists(win_path):
 			get_tree().call_deferred("change_scene_to_file", win_path)

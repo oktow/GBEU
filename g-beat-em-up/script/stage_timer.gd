@@ -55,7 +55,7 @@ func trigger_game_over():
 		player.set_physics_process(false)
 	
 	SurvivalStats.calculate_score()
-	get_tree().change_scene_to_file("res://scene/game_over_die.tscn")
+	get_tree().change_scene_to_file(ResourcePaths.GAME_OVER_DIE)
 
 # HINT: Fungsi bantuan jika suatu saat kamu ingin menghentikan timer 
 # (Misalnya saat game di-pause atau saat melawan boss)

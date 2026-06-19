@@ -1,7 +1,7 @@
 extends Control
 
-var stage_pertama = "res://scene/stage_001.tscn"
-var stage_survival = "res://scene/stage_survival.tscn"
+var first_stage = ResourcePaths.STAGE_001
+var stage_survival = ResourcePaths.STAGE_SURVIVAL
 
 func _ready():
 	$VBoxContainer/NewGameButton.pressed.connect(_on_new_game_pressed)
@@ -15,10 +15,10 @@ func _on_new_game_pressed():
 	PlayerInventory.reset_all()
 	PlayerInventory.save_data()
 	PlayerState.reset()
-	get_tree().change_scene_to_file(stage_pertama)
+	get_tree().change_scene_to_file(first_stage)
 
 func _on_load_game_pressed():
-	get_tree().change_scene_to_file("res://scene/save_selector.tscn")
+	get_tree().change_scene_to_file(ResourcePaths.SAVE_SELECTOR)
 
 func _on_survival_pressed():
 	PlayerInventory.current_slot = 0

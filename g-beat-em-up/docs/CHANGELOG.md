@@ -18,3 +18,13 @@
 - **NPC idle animasi tidak berjalan** — `AnimatedSprite2D` sudah punya sprite_frames dengan animasi "idle" di scene, tapi `play()` tidak pernah dipanggil di script. Ditambahkan `animated_sprite.play()` di `npc_modular._ready()`.
 
 - **Potrait terdistorsi di dialog** — TextureRect `Portrait` (148x205) tidak punya `stretch_mode`. Image asli 512x490 / 343x512 dipaksa `STRETCH_SCALE` (default) sehingga aspek rasio berubah. **Rekomendasi:** set `stretch_mode = 5` (KeepAspectCentered) di node Portrait agar gambar diskalakan proporsional tanpa distorsi.
+
+### Added
+- **dialog_manager.gd** — Autoload singleton untuk NPC dialogue. Auto-instantiate `dialogue_ui.tscn` jika belum ada di scene.
+
+### Fixed
+- **PickupItem & PickupEquipment tidak bisa diambil via InteractionArea** — `player.gd try_pick_up()` sekarang deteksi `PickupItem` & `PickupEquipment` lewat `InteractionArea.get_overlapping_areas()`, tidak hanya `get_overlapping_bodies()`. Script `pickup_item.gd` dan `pickup_equipment.gd` di-simplify (hapus `_input`/`body_entered`). `PickupEquipment.tscn` ditambahkan `collision_mask = 3`.
+
+- **DialogManager autoload hilang** — `project.godot` ganti UID yang tidak ditemukan ke `*res://script/dialog_manager.gd`.
+
+- **Enemy telegraph tidak batal saat dipukul** — `enemy.gd` tambah `_telegraph_seq` counter. Jika player pukul enemy saat tanda seru, attack dibatalkan. Coroutine lama/baru tidak saling tabrak. Enemy bisa telegraph ulang setelah batal.

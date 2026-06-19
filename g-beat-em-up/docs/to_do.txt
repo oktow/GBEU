@@ -1,0 +1,94 @@
+# GBeatEmUp — To-Do & Technical Debt
+
+## Assessment: 7/10
+Arsitektur resource-driven dan struktur folder solid untuk project solo.
+Prioritas utama: cleanup sebelum project membesar.
+
+---
+
+## PRIORITAS TINGGI
+
+### [x] 1. Pecah player.gd (743 baris)
+   - [x] Ekstrak PlayerStats (damage calc, on-hit, special/exp/heal, flash, damage text)
+   - [x] Ekstrak PlayerCombat (combo system, jump kick, special attack, hitbox)
+   - [x] Ekstrak PlayerDash (dash execution)
+   - [x] player.gd turun 307 baris (-59%)
+
+### [x] 2. Hilangkan duplikasi enemy.gd vs enemy_dusar.gd (~40%)
+   - [x] Ekstrak BaseEnemy class (clamp_position, spawn_damage_number, apply_burn,
+         show/hide_alert, take_damage, die, _on_knockback_state_changed,
+         _on_radar_body_entered/exited)
+   - [x] enemy.gd turun 75 baris
+   - [x] enemy_dusar.gd turun 208 baris
+   - [x] Total savings: 282 baris (38%)
+
+### [x] 3. Bersihin .tmp files dari git
+   - 7 file .tmp dihapus dari scene/
+   - *.tmp ditambahkan ke .gitignore
+
+### [x] 4. Centralize resource paths
+   - "res://assets/data/upgrades/" dan paths sejenis ditulis string literal di
+     banyak tempat (player_inventory.gd, attack_shop.gd, dll)
+   - Buat constants file atau autoload (misal ResourcePaths.gd)
+   - Contoh: const UPGRADES_DIR = "res://assets/data/upgrades/"
+   - Atau lebih baik: pakai preload untuk resource yang fixed
+
+---
+
+## PRIORITAS SEDANG
+
+### [x] 5. Perbaiki error handling Resource loading
+   - player_inventory.gd: `ResourceLoader.load(...)` tanpa null check setelahnya
+     bisa crash kalau file corrupt
+   - get_upgrade_definitions(), get_equipment_data(), get_dash_data()
+     semuanya perlu null safety
+
+### [x] 6. Rapihin bahasa campur aduk (Indonesia-Inggris)
+   - Komentar, tooltips, string log pakai Bahasa Indonesia
+   - Nama fungsi, variable, signal English
+   - Pilih salah satu dan konsisten (recommend: English untuk kode,
+     Indonesia untuk game content)
+
+### [x] 7. Hapus signal connection yang tidak terpakai
+   - player.gd: health_changed dan exp_changed signals sudah di-define
+     tapi HUD polling manual via _process (tidak pakai signal)
+   - Cek juga signal lain yang terhubung di scene tapi handler missing:
+     * StaminaTimer.timeout → _on_stamina_timer_timeout (stub di player.gd)
+     * Hitbox.body_exited → _on_hitbox_body_exited (stub di player.gd)
+
+---
+
+## PRIORITAS RENDAH (NICE TO HAVE)
+
+### [x] 8. Ganti polling di HUD/pause menu pakai signal
+   - hud.gd dan pause_menu.gd baca player stats setiap frame di _process
+   - Lebih efisien: connect ke health_changed / exp_changed signal
+
+### [x] 9. Tambah unit test
+   - 62 script, ~4400 baris, nol test
+   - Minimal: test untuk save/load system, damage calculation,
+     upgrade application, enemy spawning logic
+   - GDScript: pakai GUT (Godot Unit Test) framework v9.6.0
+
+### [ ] 10. Proteksi save file (.tres bisa diedit manual)
+   - Save file format .tres plain-text, gampang dimodifikasi user
+   - Kalau ada leaderboard online, perlu checksum/encryption
+   - Solusi: simpan hash value, validasi saat load
+
+---
+
+## CATATAN LAIN
+
+### arsitektur
+- Resource-driven pattern sudah baik. Pertahankan untuk enemy types baru,
+  attack styles, equipment, upgrades
+- Component pattern (KnockbackComponent, PlayerStats, PlayerCombat, etc.)
+  sudah terbukti reusable. Gunakan untuk sistem baru.
+
+### untuk next feature
+- Kalau nambah enemy type baru: cukup buat scene + extends BaseEnemy,
+  override _execute_behavior() aja
+- Kalau nambah attack style: tinggal buat .tres baru, inject ke shop
+- Kalau nambah stage: cukup tambah scene, set trigger next stage
+
+Last updated: 2026-06-19

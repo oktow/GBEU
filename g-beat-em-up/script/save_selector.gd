@@ -43,15 +43,15 @@ func _on_delete_pressed(slot: int):
 	refresh_slot(slot)
 
 func _on_back_pressed():
-	get_tree().change_scene_to_file("res://scene/main_menu.tscn")
+	get_tree().change_scene_to_file(ResourcePaths.MAIN_MENU)
 
 func _stage_display_name(path: String) -> String:
 	match path:
-		"res://scene/stage_001.tscn": return "Stage 1"
-		"res://scene/stage_002.tscn": return "Stage 2"
-		"res://scene/stage_003.tscn": return "Stage 3"
-		"res://scene/stage_survival.tscn": return "Survival"
-		"res://scene/main_menu.tscn": return "Complete"
+		ResourcePaths.STAGE_001: return "Stage 1"
+		ResourcePaths.STAGE_002: return "Stage 2"
+		ResourcePaths.STAGE_003: return "Stage 3"
+		ResourcePaths.STAGE_SURVIVAL: return "Survival"
+		ResourcePaths.MAIN_MENU: return "Complete"
 	return "Unknown"
 
 func _format_time(sec: float) -> String:

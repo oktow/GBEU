@@ -15,14 +15,16 @@ func _ready():
 	build_list()
 
 func load_upgrades_from_disk():
-	var dir = DirAccess.open("res://assets/data/upgrades/")
+	var dir = DirAccess.open(ResourcePaths.UPGRADES_DIR)
 	if dir:
 		dir.list_dir_begin()
 		var f = dir.get_next()
 		while f != "":
 			if f.ends_with(".tres"):
-				var res = ResourceLoader.load("res://assets/data/upgrades/" + f)
-				if res is UpgradeData:
+				var res = ResourceLoader.load(ResourcePaths.UPGRADES_DIR + f)
+				if res == null:
+					printerr("UpgradeShop: failed to load: ", ResourcePaths.UPGRADES_DIR + f)
+				elif res is UpgradeData:
 					upgrade_list.append(res)
 			f = dir.get_next()
 

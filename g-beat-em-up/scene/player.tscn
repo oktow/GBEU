@@ -534,8 +534,8 @@ animations = [{
 radius = 22.36068
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_u7b46"]
-radius = 1.0
-height = 62.0
+radius = 13.0
+height = 58.0
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_j4wxg"]
 radius = 20.0
@@ -593,7 +593,7 @@ collision_layer = 2
 collision_mask = 13
 
 [node name="interactCollision" type="CollisionShape2D" parent="FlipGroup/InteractionArea" unique_id=1067502434]
-position = Vector2(-41.375, 18.624992)
+position = Vector2(-41.375, 6.6249924)
 rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_u7b46")
 debug_color = Color(0.49908638, 0.65894645, 0.99578434, 0.41960785)
@@ -622,7 +622,4 @@ rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_hjaqi")
 
 [connection signal="timeout" from="ComboTimer" to="." method="_on_combo_timer_timeout"]
-[connection signal="body_entered" from="FlipGroup/Hitbox" to="." method="_on_hitbox_body_entered"]
-[connection signal="body_exited" from="FlipGroup/Hitbox" to="." method="_on_hitbox_body_exited"]
 [connection signal="area_entered" from="FlipGroup/Hurtbox" to="." method="_on_hurtbox_area_entered"]
-[connection signal="timeout" from="StaminaTimer" to="." method="_on_stamina_timer_timeout"]

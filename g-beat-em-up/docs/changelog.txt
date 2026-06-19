@@ -1525,5 +1525,331 @@ Catatan:
     knockback diabaikan)
 
 ===============================================================================
+Sesi 17: Pickup via InteractionArea, DialogManager, Cancel Telegraph
+===============================================================================
+
+Latar Belakang:
+- PickupItem (HP/stamina/special) hanya bisa diambil dengan menyentuh
+  MoveCollision player (CharacterBody2D), bukan InteractionArea.
+- DialogManager autoload hilang (UID tidak ditemukan) — NPC interact error.
+- Enemy telegraph (tanda seru) tidak batal saat dipukul, dan ada race
+  condition antar coroutine yang bisa bikin enemy stuck.
+
+File Baru:
+  script/dialog_manager.gd
+    - Autoload singleton untuk NPC dialogue
+    - start_dialogue(id): cari DialogueUI di scene, auto-instantiate
+      dialogue_ui.tscn jika belum ada
+
+File Dimodifikasi:
+  script/player.gd
+    - try_pick_up() sekarang juga deteksi PickupItem & PickupEquipment
+      lewat InteractionArea.get_overlapping_areas(), tidak hanya
+      get_overlapping_bodies() untuk pickable objects
+
+  script/pickup_item.gd
+    - Dihapus _input(), body_entered/body_exited, _player_in_range
+    - Logika pickup pindah ke player (apply_effect tetap)
+
+  script/pickup_equipment.gd
+    - Dihapus _input(), body_entered/body_exited, _player_in_range
+    - Logika pickup pindah ke player (pickup() tetap)
+
+  scene/PickupEquipment.tscn
+    - Ditambahkan collision_mask = 3 agar bisa dideteksi InteractionArea
+      player (yang di collision layer 2)
+
+  project.godot
+    - Ganti autoload DialogManager dari UID yang hilang
+      ke *res://script/dialog_manager.gd
+
+  script/enemy.gd
+    - Tambah _telegraph_seq: int counter untuk mencegah race condition
+      antar coroutine telegraph
+    - telegraph_attack(): guard clause sekarang cek seq != _telegraph_seq
+      — jika coroutine baru dimulai sebelum yang lama selesai, yang lama
+      batal
+    - Jika player pukul enemy saat tanda seru, take_damage() set
+      is_telegraphing = false, dan guard clause not is_telegraphing
+      membatalkan serangan
+    - Enemy setelah batal bisa telegraph ulang (tidak stuck)
+
+Alur Telegraph:
+  t=0.000  Enemy telegraph (#1), tanda seru muncul
+  t=0.100  Player pukul → take_damage: is_telegraphing=false,
+           tanda seru hilang, stun 0.15s
+  t=0.250  Stun habis → physics_process jalan → player masih di range
+           → telegraph ulang (#2), _telegraph_seq=2
+  t=0.350  Coroutine #1 selesai await → seq(1) ≠ _telegraph_seq(2)
+           → batal
+  t=0.600  Coroutine #2 selesai await → is_telegraphing masih true
+           → execute_attack() → damage ke player
+
+===============================================================================
+Sesi 18: Refactor player.gd — Ekstrak 3 komponen
+===============================================================================
+
+Latar Belakang:
+- player.gd mencapai 743 baris, terlalu gemuk (spaghetti).
+- Banyak logika berbeda (combat, dash, stats) tercampur dalam satu file.
+- Perlu dipecah mengikuti pattern KnockbackComponent yang sudah ada.
+
+File Baru:
+  script/player_stats.gd (68 baris)
+    - Class PlayerStats extends Node
+    - Fungsi: regen_stamina(), get_calculated_damage(), add_special_energy(),
+      add_exp(), heal(), try_apply_on_hit_effect(), flash_red_effect(),
+      spawn_damage_text(), reapply()
+    - Pattern: setup(player) — child node, terima parent reference
+
+  script/player_combat.gd (222 baris)
+    - Class PlayerCombat extends Node
+    - Semua logika combo (start_combo, execute_attack, play_animation_part,
+      apply_hitbox_damage, frame_reached)
+    - Semua logika jump kick (check_jump_kick, execute_jump_kick)
+    - Semua logika special attack (execute_special_attack, apply_special_hit)
+    - State: is_attacking, is_special_attacking, combo_step, _queued_attack
+
+  script/player_dash.gd (42 baris)
+    - Class PlayerDash extends Node
+    - Fungsi: start_dash()
+    - State: is_dashing
+
+File Dimodifikasi:
+  script/player.gd (743 → 307 baris)
+    - _init_components() bikin 3 child node via preload + add_child
+    - _physics_process jadi orchestrator: input → delegasi ke komponen
+    - Fungsi forwarding: get_calculated_damage(), add_exp(), heal(), dll
+      tetap di player.gd untuk backward compatibility
+    - Semua @export vars tetap di player.gd (scene inspector binding)
+    - is_attacking, combo_step, dll pindah ke PlayerCombat
+
+Tidak Ada Perubahan:
+  - scene/player.tscn (komponen dibuat via code, bukan di editor)
+  - Semua external caller tetap pakai player.take_damage(), player.heal(), dll
+
+================================================================================
+Sesi 19: BaseEnemy — Hilangkan duplikasi enemy.gd & enemy_dusar.gd
+================================================================================
+
+Latar Belakang:
+- enemy.gd (300 baris) dan enemy_dusar.gd (443 baris) punya ~40% kode identik.
+- clamp_position(), spawn_damage_number(), apply_burn(), show/hide_alert(),
+  take_damage(), die(), _on_knockback_state_changed() duplikat.
+- KnockbackComponent sudah reusable, tapi banyak kode lain belum di-share.
+
+File Baru:
+  script/base_enemy.gd (178 baris)
+    - Class BaseEnemy extends CharacterBody2D
+    - Shared @export: core_stats, exp_reward, damage_number_scene, hit_fx_scene
+    - Shared state: target_player, is_attacking, is_dead, is_stunned, dll
+    - Shared @onready: flip_group, sprite, radar_collision, attack_timer, dll
+    - Template Method pattern:
+      * _physics_process → panggil _execute_behavior(delta)
+      * take_damage → panggil _on_take_damage_interrupt()
+      * die → panggil _on_die_start()
+      * _on_knockback_state_changed → panggil _on_knockback_none()
+      * _on_radar_body_entered → panggil _on_radar_acquired()
+      * _on_radar_body_exited → panggil _on_radar_lost()
+    - Shared helpers: clamp_position(), spawn_damage_number(), apply_burn()
+
+File Dimodifikasi:
+  script/enemy.gd (300 → 75 baris, -75%)
+    - extends BaseEnemy (sebelumnya extends CharacterBody2D)
+    - Hanya menyisakan: patrol_data export, is_telegraphing state,
+      _execute_behavior (chase/patrol AI), telegraph_attack(), execute_attack(),
+      _on_attackrange_body_entered(), virtual hooks (_on_take_damage_interrupt,
+      _on_die_start, _on_radar_lost)
+
+  script/enemy_dusar.gd (443 → 208 baris, -53%)
+    - extends BaseEnemy
+    - Hanya menyisakan: projectile_data/teleport_data exports,
+      state machine (State enum, is_teleporting, can_attack),
+      _execute_behavior (IDLE/KITE/CAST_ATTACK/TELEPORT),
+      handle_idle/kite, start_cast_attack, start_teleport, fire_projectiles,
+      virtual hooks (_on_take_damage_interrupt, _on_die_start,
+      _on_knockback_none, _on_radar_acquired, _on_radar_lost)
+
+Tidak Ada Perubahan Scene:
+  - scene/enemy.tscn tetap script = res://script/enemy.gd
+  - scene/enemy_dusar.tscn tetap script = res://script/enemy_dusar.gd
+  - stage_survival.gd tetap preload("res://scene/enemy.tscn")
+
+Savings: 282 baris (38%) — 743 → 461 baris total
+
+================================================================================
+Sesi 20: Housekeeping — .tmp files, .gitignore, to_do.txt
+================================================================================
+
+Latar Belakang:
+- 7 file .tmp dari editor crash tertinggal di scene/ (belum di-track git,
+  tapi mengotori working directory).
+- .gitignore belum mencakup *.tmp.
+- Belum ada dokumentasi teknis terpusat.
+
+Perubahan:
+  .gitignore
+    - Tambah baris "*.tmp"
+
+  scene/ (7 file .tmp dihapus)
+    - music_manager.tscn6729194886.tmp
+    - music_manager.tscn6812019425.tmp
+    - player.tscn3422214434.tmp
+    - player.tscn4024863419.tmp
+    - player.tscn703125699.tmp
+    - player.tscn921174101.tmp
+    - player.tscn923663090.tmp
+
+  docs/to_do.txt
+    - File baru: assessment 7/10 + 10 item prioritas + catatan arsitektur
+
+===============================================================================
+Sesi 21: Resource Paths, Error Handling, Bahasa, Signals Cleanup
+===============================================================================
+
+Task 4: Centralize Resource Paths
+-----------------------------------
+Latar Belakang:
+- "res://assets/data/upgrades/" dan paths sejenis ditulis string literal di
+  banyak tempat (player_inventory.gd, attack_shop.gd, dll).
+
+File Baru:
+  script/resource_paths.gd (53 baris)
+    - Class ResourcePaths (class_name, global access tanpa preload)
+    - Scene path constants: MAIN_MENU, STAGE_001-003, STAGE_SURVIVAL,
+      GAME_OVER_DIE/WIN, RESULT_SCREEN, SAVE_SELECTOR, DIALOGUE_UI_PATH,
+      FIREDAMAGE_PATH, HEAL_TEXT_PATH, ENEMY_PATH
+    - Preloaded PackedScene: DIALOGUE_UI, FIREDAMAGE, ENEMY, HEAL_TEXT
+    - Data directory: UPGRADES_DIR, EQUIPS_DIR, DASHES_DIR
+    - Script paths: PLAYER_STATS_SCRIPT, PLAYER_COMBAT_SCRIPT, PLAYER_DASH_SCRIPT
+    - Asset paths: PORTRAIT_GRANDPA_LANJUNG, PORTRAIT_GENDRA
+    - Helper: load_resources_from_dir(dir_path, type_script)
+
+File Dimodifikasi (16 file, ganti hardcode string literal ke ResourcePaths.*):
+  script/upgrade_shop.gd, dash_shop.gd, equipment_ui.gd, player_inventory.gd
+    - UPGRADES_DIR, DASHES_DIR, EQUIPS_DIR untuk DirAccess + ResourceLoader.load
+  script/main_menu.gd, pause_menu.gd, result_screen.gd
+    - MAIN_MENU, STAGE_001, STAGE_SURVIVAL untuk change_scene_to_file
+  script/player.gd, game_over.gd, game_over_die.gd, game_over_win.gd
+    - GAME_OVER_DIE, RESULT_SCREEN, MAIN_MENU
+  script/splash_screen.gd, save_selector.gd
+    - MAIN_MENU, STAGE_001-003, STAGE_SURVIVAL
+  script/stage_001.gd, stage_002.gd, stage_003.gd
+    - STAGE_002, STAGE_003, MAIN_MENU, GAME_OVER_WIN
+  script/stage_survival.gd, stage_timer.gd
+    - ENEMY, GAME_OVER_DIE
+  script/base_enemy.gd, dialog_manager.gd
+    - FIREDAMAGE, DIALOGUE_UI (preloaded PackedScene)
+  script/player_state.gd, save_data.gd
+    - STAGE_001 sebagai default value
+  script/DialogueDatabase.gd
+    - PORTRAIT_GRANDPA_LANJUNG, PORTRAIT_GENDRA
+
+Tidak diubah:
+  script/music_manager.gd — audio preloads sudah terpusat dalam satu file
+
+Task 5: Perbaiki Error Handling Resource Loading
+--------------------------------------------------
+Latar Belakang:
+- ResourceLoader.load(...) tanpa null check: corrupt file bisa crash.
+
+File Dimodifikasi:
+  script/player_inventory.gd
+    - get_upgrade_definitions(): null check + push_error sebelum res is UpgradeData
+    - get_dash_data(): refactor — exists() check + load() + null check + push_error
+    - get_equipment_data(): sama seperti get_dash_data
+  script/upgrade_shop.gd, dash_shop.gd, equipment_ui.gd
+    - Masing-masing null check + printerr setelah ResourceLoader.load() gagal
+  script/dialogue_ui.gd
+    - play_line(): null check setelah load(portrait_path) sebelum assign texture
+
+Task 6: Rapihin Bahasa Campur Aduk (Indonesia-Inggris)
+-------------------------------------------------------
+Konvensi: English untuk kode, Indonesian untuk komentar/log/konten game.
+
+File Dimodifikasi:
+  script/main_menu.gd: stage_pertama → first_stage
+  script/shadow.gd: offset_lantai → floor_offset, tinggi_lompat → jump_height
+  script/resource_paths.gd: PORTRAIT_KAKEK_LANJUNG → PORTRAIT_GRANDPA_LANJUNG
+  script/DialogueDatabase.gd: referensi konstanta di-update
+
+Task 7: Hapus Signal Connection Tidak Terpakai
+-----------------------------------------------
+File Dimodifikasi:
+  script/player.gd: hapus 3 stub function (pass only):
+    _on_hitbox_body_entered, _on_hitbox_body_exited, _on_stamina_timer_timeout
+  scene/player.tscn: hapus 3 signal connection:
+    Hitbox.body_entered, Hitbox.body_exited, StaminaTimer.timeout
+
+Tidak dihapus: health_changed / exp_changed signals — masih dipakai sbg emitter
+  meski belum ada receiver. Task 8 menghubungkan HUD ke signal ini.
+
+Task 8: Ganti Polling di HUD/Pause Menu Pakai Signal
+------------------------------------------------------
+File Dimodifikasi:
+  script/hud.gd (restructure)
+    - _process polling HP/EXP → hapus (ganti signal)
+    - Connect player.health_changed → _on_player_health_changed() update health bar
+    - Connect player.exp_changed → _on_player_exp_changed() (siap untuk EXP display)
+    - _process hanya update stamina & special (perlu per-frame karena regen/charging)
+  script/pause_menu.gd (enhance)
+    - toggle_pause(): connect health_changed & exp_changed saat menu visible
+    - toggle_pause(): disconnect saat menu hidden
+    - Callback baru: _on_player_health_changed / _on_player_exp_changed →
+      auto refresh_stats() jika stats tab aktif
+
+===============================================================================
+Sesi 22: Unit Testing dengan GUT Framework
+===============================================================================
+
+Latar Belakang:
+- 62 script, ~4400 baris, nol test.
+- Belum ada framework testing atau verification otomatis.
+
+Instalasi:
+  GUT v9.6.0 (Godot 4.6 compatible)
+  Source: https://github.com/bitwes/Gut/releases/tag/v9.6.0
+  Installed to: addons/gut/
+  Activated: project.godot [editor_plugins] → res://addons/gut/plugin.cfg
+
+File Baru:
+  test/test_player_inventory.gd (15 test cases)
+    - get_upgrade_level default & set/get
+    - get_damage_multiplier default & with power upgrade
+    - get_flat_damage default
+    - has_dash default & unknown
+    - add_dash, set_active_dash
+    - get_stat_bonus without/with upgrades
+    - Signal emit (upgrades_changed, dash_changed, equipment_changed)
+
+  test/test_survival_stats.gd (22 test cases)
+    - reset clears all values
+    - register_kill increments per-enemy count
+    - get_total_kills sum
+    - calculate_score: kill points, wave bonus, time bonus (4 variants),
+      combo bonus, damage penalty (min 0)
+    - calculate_grade: S/A/B/C/D thresholds
+    - get_time_string format
+    - get_score_breakdown keys
+    - on_wave_cleared best wave tracking
+
+  test/test_save_data.gd (2 test cases)
+    - Resource default values
+    - Roundtrip set → read values
+
+  docs/godot_unit_test.txt
+    - Dokumentasi lengkap: instalasi, struktur test, assert methods,
+      3 cara menjalankan (editor GUI / CLI headless / spesifik file),
+      daftar semua test cases, panduan nambah test baru
+
+Total: 39 test cases (3 test files)
+
+Cara Jalankan:
+  1. Godot Editor: Project > Tools > GUT > Configure (res://test/) > Run
+  2. CLI: godot --headless -s addons/gut/gut_cmdln.gd -gtest="res://test/" -gexit
+  3. Spesifik: godot --headless -s addons/gut/gut_cmdln.gd \
+     -gselect="test_player_inventory.gd" -gexit
+
+===============================================================================
 End of changelog
 =================================================================================

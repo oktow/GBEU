@@ -5,7 +5,7 @@ var stamina: float = 0.0
 var special: float = 0.0
 var exp: int = 0
 var attack_style: Resource = null
-var last_stage: String = "res://scene/stage_001.tscn"
+var last_stage: String = ResourcePaths.STAGE_001
 var should_restore: bool = false
 
 func save(player, next_stage: String = "") -> void:
@@ -38,5 +38,5 @@ func reset() -> void:
 	special = 0.0
 	exp = 0
 	attack_style = null
-	last_stage = "res://scene/stage_001.tscn"
+	last_stage = ResourcePaths.STAGE_001
 	should_restore = false

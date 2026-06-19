@@ -1,0 +1,167 @@
+================================================================================
+ UNIT TESTING — GUT (Godot Unit Test) Framework
+================================================================================
+ Project  : GBeatEmUp
+ Framework: GUT v9.6.0 (Godot 4.6 compatible)
+ Directory: res://test/
+ Plugin   : res://addons/gut/
+ Updated  : 2026-06-19
+
+================================================================================
+ INSTALASI
+================================================================================
+
+GUT sudah terinstall di addons/gut/ dan terdaftar di project.godot
+pada bagian [editor_plugins].
+
+Jika perlu install ulang:
+  1. Download dari https://github.com/bitwes/Gut/releases (v9.6.0+)
+  2. Extract folder addons/gut/ ke project/addons/gut/
+  3. Di Godot: Project > Project Settings > Plugins > centang "Gut"
+
+================================================================================
+ STRUKTUR TEST
+================================================================================
+
+res://test/
+  test_player_inventory.gd   -- 15 test cases
+  test_survival_stats.gd     -- 22 test cases
+  test_save_data.gd          -- 2  test cases
+  (tambah file baru sesuai kebutuhan dengan prefix "test_")
+
+Setiap test script:
+  extends GutTest
+
+  func before_each():    # (opsional) dijalankan sebelum setiap test
+  func after_each():     # (opsional) dijalankan setelah setiap test
+  func test_xxx():       # nama fungsi harus diawali "test_"
+
+================================================================================
+ ASSERT METHODS YANG SERING DIPAKAI
+================================================================================
+
+  assert_eq(actual, expected, msg)       -- equal
+  assert_ne(actual, not_expected, msg)   -- not equal
+  assert_true(actual, msg)               -- true
+  assert_false(actual, msg)              -- false
+  assert_has(dict_or_arr, key, msg)      -- key exists
+  assert_does_not_have(...)              -- key not exists
+  assert_null(actual, msg)
+  assert_not_null(actual, msg)
+  assert_between(val, low, high, msg)
+
+================================================================================
+ CARA MENJALANKAN TEST
+================================================================================
+
+--- CARA 1: Via Godot Editor (termudah) ---
+  1. Buka project di Godot
+  2. Menu: Project > Tools > GUT > Configure
+  3. Isi "Test Directories" dengan:  res://test
+  4. Klik Close
+  5. Menu: Project > Tools > GUT > Run
+  6. Panel GUT akan muncul dengan hasil test (hijau = pass, merah = fail)
+
+--- CARA 2: Via Command Line (headless) ---
+  1. Buka terminal/command prompt
+  2. Jalankan:
+
+     godot --headless -s addons/gut/gut_cmdln.gd \
+           --path D:\GBEU\g-beat-em-up \
+           -gtest="res://test/" \
+           -ginclude_subdirs \
+           -gexit
+
+     Penjelasan flag:
+       --headless          : tanpa window
+       -s addons/gut/...   : script entry GUT CLI
+       --path <dir>        : path project
+       -gtest="res://test/" : direktori test
+       -ginclude_subdirs   : cari test di subfolder
+       -gexit              : keluar setelah selesai
+
+--- CARA 3: Run test spesifik ---
+  godot --headless -s addons/gut/gut_cmdln.gd \
+        --path D:\GBEU\g-beat-em-up \
+        -gselect="test_player_inventory.gd" \
+        -gexit
+
+--- CARA 4: Export hasil ke JUnit XML ---
+  godot --headless -s addons/gut/gut_cmdln.gd \
+        --path D:\GBEU\g-beat-em-up \
+        -gjunit_xml_file="res://test/test_results.xml" \
+        -gexit
+
+================================================================================
+ DAFTAR TEST YANG TERSEDIA
+================================================================================
+
+test_player_inventory.gd (15 tests):
+  test_get_upgrade_level_default        -- unknown id returns 0
+  test_set_and_get_upgrade_level        -- set level 5, get returns 5
+  test_get_damage_multiplier_default    -- no upgrades = 1.0
+  test_get_damage_multiplier_with_power -- power 3 = 1.3
+  test_get_flat_damage_default          -- no equipment = 0
+  test_has_dash_default                 -- dash_normal owned by default
+  test_has_dash_unknown                 -- unknown dash not owned
+  test_add_dash                         -- add then has_dash returns true
+  test_active_dash_default              -- default is dash_normal
+  test_set_active_dash                  -- set_active_dash updates value
+  test_get_stat_bonus_no_upgrades       -- 0 bonus without upgrades
+  test_get_stat_bonus_with_upgrades     -- speed 2 * 5.0 = 10.0
+  test_upgrades_changed_signal          -- signal emitted on set
+  test_dash_changed_signal              -- signal emitted on add
+  test_equipment_changed_signal         -- signal emitted on add
+
+test_survival_stats.gd (22 tests):
+  test_reset_clears_values              -- all values zero after reset
+  test_register_kill_increments_count   -- kills tracked per enemy type
+  test_get_total_kills                  -- sum of all kills
+  test_calculate_score_kill_points      -- kill * value
+  test_calculate_score_with_wave_bonus  -- +wave * 500
+  test_calculate_score_time_bonus_*     -- (4 variants: <3m, <5m, <8m, >8m)
+  test_calculate_score_combo_bonus      -- combo * 50
+  test_calculate_score_damage_penalty   -- -damage * 8 (min 0)
+  test_grade_S/A/B/C/D                  -- (5 variants)
+  test_get_time_string                  -- 125s = "02:05"
+  test_get_time_string_zero             -- 0s = "00:00"
+  test_get_score_breakdown_keys         -- all expected keys present
+  test_on_wave_cleared_tracks_kills     -- best wave text
+  test_get_best_wave_text_no_waves      -- empty string
+
+test_save_data.gd (2 tests):
+  test_save_data_defaults               -- all default values correct
+  test_save_data_roundtrip              -- set values, read back
+
+Total: 39 test cases
+
+================================================================================
+ MENAMBAH TEST BARU
+================================================================================
+
+  1. Buat file baru di res://test/ dengan prefix "test_"
+  2. extends GutTest
+  3. Tulis fungsi test diawali "test_"
+  4. Jalankan ulang GUT
+
+  Contoh struktur:
+    extends GutTest
+
+    func before_each():
+        # setup sebelum tiap test
+
+    func test_something():
+        var result = my_function(arg)
+        assert_eq(result, expected_value)
+
+================================================================================
+ CATATAN
+================================================================================
+
+- Autoloads (PlayerInventory, SurvivalStats, dll) bisa diakses langsung
+  dari test tanpa perlu instance.
+- Untuk class biasa (non-autoload), buat instance dengan ClassName.new()
+- Resource class (SaveData, PlayerConfig, dll) bisa diinstantiate langsung.
+- Test untuk scene/Node memerlukan autofree atau queue_free di after_each()
+  agar tidak meninggalkan orphan nodes.
+- File .tres testing dapat diletakkan di res://test/fixtures/ jika diperlukan.

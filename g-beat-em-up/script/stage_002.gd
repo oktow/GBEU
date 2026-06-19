@@ -106,10 +106,10 @@ func all_enemies_defeated():
 # 4. HINT: Fungsi signal dari NextStageTrigger ketika disentuh Gendra
 func _on_next_stage_trigger_body_entered(body: Node2D) -> void:
 	if body.is_in_group("Player"):
-		PlayerState.save(body, "res://scene/stage_003.tscn")
+		PlayerState.save(body, ResourcePaths.STAGE_003)
 		print("SISTEM: Gendra keluar kamera & menyentuh trigger. Pindah ke Stage 3!")
 		
-		var next_stage_path = "res://scene/stage_003.tscn"
+		var next_stage_path = ResourcePaths.STAGE_003
 		
 		if ResourceLoader.exists(next_stage_path):
 			get_tree().call_deferred("change_scene_to_file", next_stage_path)

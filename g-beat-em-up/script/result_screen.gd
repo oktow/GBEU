@@ -264,9 +264,9 @@ func _on_retry_pressed():
 	var was_survival = SurvivalStats.is_survival_mode
 	SurvivalStats.reset()
 	if was_survival:
-		get_tree().change_scene_to_file("res://scene/stage_survival.tscn")
+		get_tree().change_scene_to_file(ResourcePaths.STAGE_SURVIVAL)
 	else:
-		get_tree().change_scene_to_file("res://scene/stage_001.tscn")
+		get_tree().change_scene_to_file(ResourcePaths.STAGE_001)
 
 
 func _on_next_stage_pressed():
@@ -274,13 +274,13 @@ func _on_next_stage_pressed():
 	MusicManager.play_bgm("menu")
 	SurvivalStats.is_win = false
 	SurvivalStats.reset()
-	get_tree().change_scene_to_file("res://scene/main_menu.tscn")
+	get_tree().change_scene_to_file(ResourcePaths.MAIN_MENU)
 
 
 func _on_exit_pressed():
 	PlayerState.reset()
 	MusicManager.play_bgm("menu")
-	get_tree().change_scene_to_file("res://scene/main_menu.tscn")
+	get_tree().change_scene_to_file(ResourcePaths.MAIN_MENU)
 
 
 func _input(event):

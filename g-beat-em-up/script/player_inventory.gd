@@ -26,14 +26,16 @@ func set_upgrade_level(id: String, level: int):
 
 func get_upgrade_definitions() -> Array[UpgradeData]:
 	var result: Array[UpgradeData] = []
-	var dir = DirAccess.open("res://assets/data/upgrades/")
+	var dir = DirAccess.open(ResourcePaths.UPGRADES_DIR)
 	if dir:
 		dir.list_dir_begin()
 		var f = dir.get_next()
 		while f != "":
 			if f.ends_with(".tres"):
-				var res = ResourceLoader.load("res://assets/data/upgrades/" + f)
-				if res is UpgradeData:
+				var res = ResourceLoader.load(ResourcePaths.UPGRADES_DIR + f)
+				if res == null:
+					push_error("get_upgrade_definitions: failed to load: ", ResourcePaths.UPGRADES_DIR + f)
+				elif res is UpgradeData:
 					result.append(res)
 			f = dir.get_next()
 	return result
@@ -150,16 +152,24 @@ func set_active_dash(dash_id: String):
 		dash_changed.emit()
 
 func get_dash_data(dash_id: String):
-	var path = "res://assets/data/dashes/" + dash_id + ".tres"
-	if ResourceLoader.exists(path):
-		return ResourceLoader.load(path)
-	return null
+	var path = ResourcePaths.DASHES_DIR + dash_id + ".tres"
+	if not ResourceLoader.exists(path):
+		return null
+	var res = ResourceLoader.load(path)
+	if res == null:
+		push_error("get_dash_data: failed to load: ", path)
+		return null
+	return res
 
 func get_equipment_data(equip_id: String):
-	var path = "res://assets/data/equips/" + equip_id + ".tres"
-	if ResourceLoader.exists(path):
-		return ResourceLoader.load(path)
-	return null
+	var path = ResourcePaths.EQUIPS_DIR + equip_id + ".tres"
+	if not ResourceLoader.exists(path):
+		return null
+	var res = ResourceLoader.load(path)
+	if res == null:
+		push_error("get_equipment_data: failed to load: ", path)
+		return null
+	return res
 
 func _get_save_path(slot: int) -> String:
 	return SAVE_PATH.replace("{slot}", str(slot))

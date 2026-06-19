@@ -13,7 +13,7 @@ func _ready():
 	go_to_main_menu()
 
 func go_to_main_menu():
-	var menu_path = "res://scene/main_menu.tscn" # Pastikan path menu utama benar
+	var menu_path = ResourcePaths.MAIN_MENU
 	if ResourceLoader.exists(menu_path):
 		get_tree().change_scene_to_file(menu_path)
 	else:

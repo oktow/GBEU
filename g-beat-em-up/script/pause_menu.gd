@@ -47,11 +47,11 @@ func refresh_stats():
 func toggle_pause():
 	if get_tree() == null: return
 
-	#MusicManager.play_sfx("special")
 	var new_pause_state = !get_tree().paused
 	get_tree().paused = new_pause_state
 	visible = new_pause_state
 
+	var p = get_tree().get_first_node_in_group("Player")
 	if visible:
 		show_tab("stats")
 		if shop_panel and shop_panel.has_method("refresh"):
@@ -62,6 +62,17 @@ func toggle_pause():
 			equip_panel.refresh()
 		if dash_panel and dash_panel.has_method("refresh"):
 			dash_panel.refresh()
+		if p:
+			if not p.health_changed.is_connected(_on_player_health_changed):
+				p.health_changed.connect(_on_player_health_changed)
+			if not p.exp_changed.is_connected(_on_player_exp_changed):
+				p.exp_changed.connect(_on_player_exp_changed)
+	else:
+		if p:
+			if p.health_changed.is_connected(_on_player_health_changed):
+				p.health_changed.disconnect(_on_player_health_changed)
+			if p.exp_changed.is_connected(_on_player_exp_changed):
+				p.exp_changed.disconnect(_on_player_exp_changed)
 
 	var mobile_controls = get_tree().root.find_child("MobileControls", true, false)
 	if mobile_controls:
@@ -90,6 +101,14 @@ func show_tab(tab: String):
 		"equip": if equip_panel and equip_panel.has_method("refresh"): equip_panel.refresh()
 		"dash": if dash_panel and dash_panel.has_method("refresh"): dash_panel.refresh()
 
+func _on_player_health_changed(_new_hp: float):
+	if visible and current_tab == "stats":
+		refresh_stats()
+
+func _on_player_exp_changed(_new_exp: int):
+	if visible and current_tab == "stats":
+		refresh_stats()
+
 func _on_button_stats_pressed():
 	show_tab("stats")
 
@@ -113,7 +132,7 @@ func _on_button_leave_pressed():
 	get_tree().paused = false
 	visible = false
 
-	var scene_path = "res://scene/main_menu.tscn"
+	var scene_path = ResourcePaths.MAIN_MENU
 	if ResourceLoader.exists(scene_path):
 		var error = get_tree().change_scene_to_file(scene_path)
 		if error != OK:

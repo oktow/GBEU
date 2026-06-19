@@ -10,7 +10,7 @@ class_name SaveData
 @export var slot_name: String = "Slot"
 @export var timestamp: int = 0
 @export var play_time: float = 0.0
-@export var last_stage: String = "res://scene/stage_001.tscn"
+@export var last_stage: String = ResourcePaths.STAGE_001
 @export var total_kills: int = 0
 
 @export var health: float = 0.0
