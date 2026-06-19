@@ -1,4 +1,4 @@
-extends preload("res://script/base_enemy.gd")
+extends BaseEnemy
 
 @export var projectile_data: ProjectileData
 @export var teleport_data: TeleportData
@@ -18,7 +18,6 @@ func _on_base_ready():
 
 func _execute_behavior(_delta):
 	if is_teleporting or is_attacking:
-		refresh_animation()
 		return
 
 	match current_state:
