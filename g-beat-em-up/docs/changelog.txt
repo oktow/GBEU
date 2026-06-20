@@ -1851,5 +1851,78 @@ Cara Jalankan:
      -gselect="test_player_inventory.gd" -gexit
 
 ===============================================================================
+Sesi 23: Opening Cutscene — "Laporan dari Hutan Utara"
+===============================================================================
+
+Latar Belakang:
+- Game langsung lompat dari Main Menu → Stage 1 tanpa cerita pembuka.
+- Perlu opening cutscene visual novel style untuk memperkenalkan cerita:
+  Kakek Lanjung melapor tentang hawa aneh di hutan utara → Gendra
+  menyelidiki.
+
+Alur Baru:
+  Main Menu → [New Game] → OPENING CUTSCENE → Stage 1
+
+File Baru:
+  scene/opening_cutscene.tscn (172 baris)
+    - Root Control full-screen 640×360
+    - Background: TextureRect stage001.jpg ukuran 1059×360 (lebih lebar
+      dari layar untuk efek camera pan)
+    - Portrait: TextureRect 200×200 (kiri bawah, muncul bergantian)
+    - DialogBox: Panel bottom 130px (NameLabel + RichTextLabel +
+      NextIcon btnCircle)
+    - FadeOverlay: ColorRect hitam penuh (fade in/out)
+    - AnimationPlayer: 3 animasi (RESET, camera_pan 5s, fade_out 0.5s)
+    - TypeTimer: 0.03s untuk efek typewriter
+
+  script/opening_cutscene.gd (111 baris)
+    - class OpeningCutscene extends Control
+    - dialogue_lines: 10 baris percakapan Kakek Lanjung ↔ Gendra
+    - _ready(): fade in + animasi camera pan (background geser 419px
+      dari kiri ke kanan selama 5s)
+    - Setelah pan selesai → dialog muncul (typewriter 0.03s/char)
+    - Pemain tekan Interact untuk skip typing / lanjut baris
+    - Baris terakhir → fade out 0.5s → change_scene ke STAGE_001
+
+File Dimodifikasi:
+  script/resource_paths.gd
+    - Baris 6: + const OPENING_CUTSCENE: String
+
+  script/main_menu.gd
+    - Baris 18: _on_new_game_pressed() panggil
+      ResourcePaths.OPENING_CUTSCENE (sebelumnya STAGE_001 langsung)
+
+Dialog Opening (10 baris):
+  1. Kakek: "Gendra, ada laporan dari para penjaga. Hawa aneh meliputi
+     hutan utara."
+  2. Gendra: "Hawa aneh? Maksudnya... cuaca lagi panas, Kek?"
+  3. Kakek: "Bukan cuaca! Banyak arwah penasaran berkeliaran. Binatang-
+     binatang jadi ganas."
+  4. Gendra: "Oh... berarti kalau aku ke utara, mereka bakal nyerang aku
+     gitu?"
+  5. Kakek: "Tepat. Makanya aku panggil pemimpin bagian utara."
+  6. Gendra: "Tenang Kek, aku pukul mereka sampai sadar. Tapi... bekalnya
+     apa aja?"
+  7. Kakek: "*menghela napas* Di ujung utara hutan, pusat semua keanehan.
+     Selidiki dan selesaikan."
+  8. Gendra: "Siap! Biar aku bisa santai lagi. Tapi Kek, kalau ketemu
+     badut di hutan... itu bukan dalang keanehan kan?"
+  9. Kakek: "Pokoknya pergilah, Gendra. Jaga dirimu."
+  10. Gendra: "Siap berangkat! Gendra tod! ...Kek, hutan utara lewat mana
+      lagi?"
+
+Fix (post-testing):
+  - %NameLabel → $DialogBox/NameLabel (unique_name_in_scope tidak bekerja
+    di file .tscn manual)
+  - TypeTimer one_shot=true → dihapus (default false/looping) agar efek
+    typewriter berjalan multi-karakter
+
+Arsitektur:
+  - Mengikuti pattern splash_screen (Control root + AnimationPlayer)
+  - Layout dialog mengikuti pattern dialogue_ui.tscn (portrait kiri bawah
+    + dialog box anchored bottom)
+  - ResourcePaths untuk semua path scene/resource
+
+===============================================================================
 End of changelog
 =================================================================================

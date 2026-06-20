@@ -1,0 +1,198 @@
+[gd_scene format=3 uid="uid://yev2bjrbilcc"]
+
+[ext_resource type="Script" uid="uid://c323hmfm3jhmd" path="res://script/opening_cutscene.gd" id="1_a"]
+[ext_resource type="Texture2D" uid="uid://c731eeee4qrw2" path="res://assets/stage001.jpg" id="2_b"]
+[ext_resource type="Texture2D" uid="uid://e5mx7otik53w" path="res://assets/btnCircle.png" id="3_c"]
+
+[sub_resource type="Animation" id="Anim_reset"]
+resource_name = "RESET"
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Background:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("FadeOverlay:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(0, 0, 0, 1)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Background:scale")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+
+[sub_resource type="Animation" id="Anim_camera_pan"]
+resource_name = "camera_pan"
+length = 5.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Background:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0, 0), Vector2(-419, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("FadeOverlay:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.8),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(0, 0, 0, 1), Color(0, 0, 0, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Background:scale")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(3.1),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0.54449654, 0.54449654)]
+}
+
+[sub_resource type="Animation" id="Anim_fade_out"]
+resource_name = "fade_out"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("FadeOverlay:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(0, 0, 0, 0), Color(0, 0, 0, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimLib_main"]
+_data = {
+&"RESET": SubResource("Anim_reset"),
+&"camera_pan": SubResource("Anim_camera_pan"),
+&"fade_out": SubResource("Anim_fade_out")
+}
+
+[node name="OpeningCutscene" type="Control" unique_id=1937014799]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_a")
+
+[node name="Background" type="TextureRect" parent="." unique_id=2000792554]
+layout_mode = 0
+offset_right = 3484.0
+offset_bottom = 1184.0
+texture = ExtResource("2_b")
+
+[node name="Portrait" type="TextureRect" parent="." unique_id=1686450273]
+visible = false
+layout_mode = 0
+offset_left = 14.0
+offset_top = 140.0
+offset_right = 214.0
+offset_bottom = 340.0
+
+[node name="DialogBox" type="Panel" parent="." unique_id=2025155782]
+visible = false
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -89.0
+offset_bottom = 41.0
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1, 0.68)
+
+[node name="NameLabel" type="Label" parent="DialogBox" unique_id=454135944]
+layout_mode = 0
+offset_left = 49.0
+offset_top = 5.0
+offset_right = 221.0
+offset_bottom = 28.0
+
+[node name="TextLabel" type="RichTextLabel" parent="DialogBox" unique_id=1428816791]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -284.0
+offset_top = -20.882355
+offset_right = 268.0
+offset_bottom = 55.0
+grow_horizontal = 2
+grow_vertical = 2
+autowrap_mode = 2
+
+[node name="NextIcon" type="TextureRect" parent="DialogBox" unique_id=554214430]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -33.0
+offset_top = 15.5
+offset_right = 95.0
+offset_bottom = 143.5
+grow_horizontal = 0
+grow_vertical = 2
+scale = Vector2(0.18430762, 0.18430762)
+texture = ExtResource("3_c")
+
+[node name="FadeOverlay" type="ColorRect" parent="." unique_id=275255266]
+modulate = Color(0, 0, 0, 1)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1254151331]
+libraries/ = SubResource("AnimLib_main")
+
+[node name="TypeTimer" type="Timer" parent="." unique_id=1599796004]
+wait_time = 0.03

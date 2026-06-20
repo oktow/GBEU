@@ -3,6 +3,7 @@ class_name ResourcePaths
 
 # ── Scene Paths (for change_scene_to_file, ResourceLoader.load) ──
 const MAIN_MENU: String = "res://scene/main_menu.tscn"
+const OPENING_CUTSCENE: String = "res://scene/opening_cutscene.tscn"
 const STAGE_001: String = "res://scene/stage_001.tscn"
 const STAGE_002: String = "res://scene/stage_002.tscn"
 const STAGE_003: String = "res://scene/stage_003.tscn"

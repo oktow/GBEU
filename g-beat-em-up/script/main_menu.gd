@@ -15,7 +15,7 @@ func _on_new_game_pressed():
 	PlayerInventory.reset_all()
 	PlayerInventory.save_data()
 	PlayerState.reset()
-	get_tree().change_scene_to_file(first_stage)
+	get_tree().change_scene_to_file(ResourcePaths.OPENING_CUTSCENE)
 
 func _on_load_game_pressed():
 	get_tree().change_scene_to_file(ResourcePaths.SAVE_SELECTOR)
